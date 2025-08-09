@@ -1,0 +1,1436 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Progress } from "@/components/ui/progress"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Settings,
+  School,
+  Users,
+  Shield,
+  Bell,
+  Database,
+  Key,
+  Mail,
+  Smartphone,
+  Globe,
+  Calendar,
+  GraduationCap,
+  UserCheck,
+  Lock,
+  Eye,
+  EyeOff,
+  Plus,
+  Edit,
+  Trash2,
+  MoreHorizontal,
+  Save,
+  RefreshCw,
+  Download,
+  Upload,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Info,
+  Zap,
+  Clock,
+  BarChart3
+} from "lucide-react"
+
+type SystemSettings = {
+  schoolYear: {
+    current: string
+    startDate: string
+    endDate: string
+    terms: {
+      term1: { start: string; end: string }
+      term2: { start: string; end: string }
+      term3: { start: string; end: string }
+    }
+  }
+  grading: {
+    scale: string
+    passMarkPercentage: number
+    gradeBoundaries: {
+      A: { min: number; max: number }
+      B: { min: number; max: number }
+      C: { min: number; max: number }
+      D: { min: number; max: number }
+      F: { min: number; max: number }
+    }
+    showPositions: boolean
+    calculateGPA: boolean
+  }
+  notifications: {
+    emailEnabled: boolean
+    smsEnabled: boolean
+    appNotificationsEnabled: boolean
+    pushNotificationsEnabled: boolean
+    defaultChannels: string[]
+    reminderSettings: {
+      examReminders: boolean
+      feeReminders: boolean
+      eventReminders: boolean
+      resultNotifications: boolean
+    }
+  }
+  integrations: {
+    paymentGateway: {
+      enabled: boolean
+      provider: string
+      apiKey: string
+      webhookUrl: string
+    }
+    emailService: {
+      provider: string
+      apiKey: string
+      fromEmail: string
+      fromName: string
+    }
+    smsService: {
+      provider: string
+      apiKey: string
+      senderId: string
+    }
+  }
+  security: {
+    passwordPolicy: {
+      minLength: number
+      requireUppercase: boolean
+      requireLowercase: boolean
+      requireNumbers: boolean
+      requireSpecialChars: boolean
+      maxAge: number
+    }
+    sessionTimeout: number
+    maxLoginAttempts: number
+    twoFactorRequired: boolean
+    ipWhitelist: string[]
+  }
+}
+
+type AdminUser = {
+  id: string
+  name: string
+  email: string
+  role: string
+  permissions: string[]
+  lastLogin: string
+  status: "Active" | "Suspended" | "Pending"
+  createdAt: string
+}
+
+type Role = {
+  id: string
+  name: string
+  description: string
+  permissions: string[]
+  userCount: number
+  isSystem: boolean
+}
+
+const AVAILABLE_PERMISSIONS = [
+  { id: "admin.dashboard", name: "Admin Dashboard", category: "Administration" },
+  { id: "schools.view", name: "View Schools", category: "Schools" },
+  { id: "schools.create", name: "Create Schools", category: "Schools" },
+  { id: "schools.edit", name: "Edit Schools", category: "Schools" },
+  { id: "schools.delete", name: "Delete Schools", category: "Schools" },
+  { id: "students.view", name: "View Students", category: "Students" },
+  { id: "students.create", name: "Create Students", category: "Students" },
+  { id: "students.edit", name: "Edit Students", category: "Students" },
+  { id: "students.delete", name: "Delete Students", category: "Students" },
+  { id: "teachers.view", name: "View Teachers", category: "Teachers" },
+  { id: "teachers.create", name: "Create Teachers", category: "Teachers" },
+  { id: "teachers.edit", name: "Edit Teachers", category: "Teachers" },
+  { id: "teachers.delete", name: "Delete Teachers", category: "Teachers" },
+  { id: "results.view", name: "View Results", category: "Results" },
+  { id: "results.create", name: "Create Results", category: "Results" },
+  { id: "results.edit", name: "Edit Results", category: "Results" },
+  { id: "results.publish", name: "Publish Results", category: "Results" },
+  { id: "notifications.send", name: "Send Notifications", category: "Notifications" },
+  { id: "notifications.manage", name: "Manage Notifications", category: "Notifications" },
+  { id: "settings.view", name: "View Settings", category: "Settings" },
+  { id: "settings.edit", name: "Edit Settings", category: "Settings" },
+  { id: "analytics.view", name: "View Analytics", category: "Analytics" },
+  { id: "reports.generate", name: "Generate Reports", category: "Reports" }
+]
+
+export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState("general")
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [showApiKey, setShowApiKey] = useState(false)
+  const [isAddRoleDialogOpen, setIsAddRoleDialogOpen] = useState(false)
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false)
+
+  const [settings, setSettings] = useState<SystemSettings>({
+    schoolYear: {
+      current: "2024/2025",
+      startDate: "2024-09-01",
+      endDate: "2025-07-31",
+      terms: {
+        term1: { start: "2024-09-01", end: "2024-12-15" },
+        term2: { start: "2025-01-08", end: "2025-04-15" },
+        term3: { start: "2025-04-22", end: "2025-07-31" }
+      }
+    },
+    grading: {
+      scale: "A-F",
+      passMarkPercentage: 50,
+      gradeBoundaries: {
+        A: { min: 90, max: 100 },
+        B: { min: 80, max: 89 },
+        C: { min: 70, max: 79 },
+        D: { min: 60, max: 69 },
+        F: { min: 0, max: 59 }
+      },
+      showPositions: true,
+      calculateGPA: true
+    },
+    notifications: {
+      emailEnabled: true,
+      smsEnabled: true,
+      appNotificationsEnabled: true,
+      pushNotificationsEnabled: false,
+      defaultChannels: ["Email", "SMS"],
+      reminderSettings: {
+        examReminders: true,
+        feeReminders: true,
+        eventReminders: true,
+        resultNotifications: true
+      }
+    },
+    integrations: {
+      paymentGateway: {
+        enabled: false,
+        provider: "stripe",
+        apiKey: "",
+        webhookUrl: ""
+      },
+      emailService: {
+        provider: "smtp",
+        apiKey: "",
+        fromEmail: "noreply@school.edu",
+        fromName: "School Management System"
+      },
+      smsService: {
+        provider: "twilio",
+        apiKey: "",
+        senderId: "SCHOOL"
+      }
+    },
+    security: {
+      passwordPolicy: {
+        minLength: 8,
+        requireUppercase: true,
+        requireLowercase: true,
+        requireNumbers: true,
+        requireSpecialChars: false,
+        maxAge: 90
+      },
+      sessionTimeout: 480,
+      maxLoginAttempts: 5,
+      twoFactorRequired: false,
+      ipWhitelist: []
+    }
+  })
+
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([
+    {
+      id: "1",
+      name: "John Doe",
+      email: "john.doe@school.edu",
+      role: "Super Admin",
+      permissions: ["*"],
+      lastLogin: "2024-03-15T10:30:00Z",
+      status: "Active",
+      createdAt: "2023-09-01T00:00:00Z"
+    },
+    {
+      id: "2",
+      name: "Jane Smith",
+      email: "jane.smith@school.edu",
+      role: "School Admin",
+      permissions: ["schools.*", "students.*", "teachers.*"],
+      lastLogin: "2024-03-14T16:45:00Z",
+      status: "Active",
+      createdAt: "2023-10-15T00:00:00Z"
+    }
+  ])
+
+  const [roles, setRoles] = useState<Role[]>([
+    {
+      id: "1",
+      name: "Super Admin",
+      description: "Full system access with all permissions",
+      permissions: ["*"],
+      userCount: 1,
+      isSystem: true
+    },
+    {
+      id: "2",
+      name: "School Admin",
+      description: "Manage individual schools and their resources",
+      permissions: ["schools.*", "students.*", "teachers.*", "results.*"],
+      userCount: 5,
+      isSystem: true
+    },
+    {
+      id: "3",
+      name: "Academic Coordinator",
+      description: "Manage academic processes and results",
+      permissions: ["results.*", "analytics.view", "reports.generate"],
+      userCount: 12,
+      isSystem: false
+    }
+  ])
+
+  const [newRole, setNewRole] = useState({
+    name: "",
+    description: "",
+    permissions: [] as string[]
+  })
+
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    role: "",
+    sendInvite: true
+  })
+
+  const handleSaveSettings = async () => {
+    setIsSaving(true)
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    setIsSaving(false)
+    // Show success message
+  }
+
+  const handleCreateRole = () => {
+    const role: Role = {
+      id: (roles.length + 1).toString(),
+      ...newRole,
+      userCount: 0,
+      isSystem: false
+    }
+    setRoles([...roles, role])
+    setNewRole({ name: "", description: "", permissions: [] })
+    setIsAddRoleDialogOpen(false)
+  }
+
+  const handleCreateUser = () => {
+    const user: AdminUser = {
+      id: (adminUsers.length + 1).toString(),
+      ...newUser,
+      permissions: roles.find(r => r.name === newUser.role)?.permissions || [],
+      lastLogin: "",
+      status: "Pending",
+      createdAt: new Date().toISOString()
+    }
+    setAdminUsers([...adminUsers, user])
+    setNewUser({ name: "", email: "", role: "", sendInvite: true })
+    setIsAddUserDialogOpen(false)
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">⚙️ System Settings</h1>
+          <p className="text-muted-foreground">
+            Configure system-wide settings, user management, and security
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm">
+            <Download className="mr-2 h-4 w-4" />
+            Export Config
+          </Button>
+          <Button variant="outline" size="sm">
+            <Upload className="mr-2 h-4 w-4" />
+            Import Config
+          </Button>
+          <Button onClick={handleSaveSettings} disabled={isSaving}>
+            {isSaving ? (
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
+            Save All Changes
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Settings Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="general">🏫 General</TabsTrigger>
+          <TabsTrigger value="notifications">🔔 Notifications</TabsTrigger>
+          <TabsTrigger value="integrations">🔗 Integrations</TabsTrigger>
+          <TabsTrigger value="users">👥 Users</TabsTrigger>
+          <TabsTrigger value="security">🔒 Security</TabsTrigger>
+        </TabsList>
+
+        {/* General Settings Tab */}
+        <TabsContent value="general" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* School Year Configuration */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  School Year Settings
+                </CardTitle>
+                <CardDescription>Configure academic year and term dates</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="currentYear">Current Academic Year</Label>
+                  <Input
+                    id="currentYear"
+                    value={settings.schoolYear.current}
+                    onChange={(e) => setSettings(prev => ({
+                      ...prev,
+                      schoolYear: { ...prev.schoolYear, current: e.target.value }
+                    }))}
+                  />
+                </div>
+                
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="yearStart">Year Start Date</Label>
+                    <Input
+                      id="yearStart"
+                      type="date"
+                      value={settings.schoolYear.startDate}
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
+                        schoolYear: { ...prev.schoolYear, startDate: e.target.value }
+                      }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="yearEnd">Year End Date</Label>
+                    <Input
+                      id="yearEnd"
+                      type="date"
+                      value={settings.schoolYear.endDate}
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
+                        schoolYear: { ...prev.schoolYear, endDate: e.target.value }
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                <Separator />
+                
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Term Dates</Label>
+                  {Object.entries(settings.schoolYear.terms).map(([term, dates]) => (
+                    <div key={term} className="space-y-2">
+                      <Label className="text-xs text-muted-foreground uppercase">{term.replace('term', 'Term ')}</Label>
+                      <div className="grid gap-2 md:grid-cols-2">
+                        <Input
+                          type="date"
+                          value={dates.start}
+                          onChange={(e) => setSettings(prev => ({
+                            ...prev,
+                            schoolYear: {
+                              ...prev.schoolYear,
+                              terms: {
+                                ...prev.schoolYear.terms,
+                                [term]: { ...dates, start: e.target.value }
+                              }
+                            }
+                          }))}
+                        />
+                        <Input
+                          type="date"
+                          value={dates.end}
+                          onChange={(e) => setSettings(prev => ({
+                            ...prev,
+                            schoolYear: {
+                              ...prev.schoolYear,
+                              terms: {
+                                ...prev.schoolYear.terms,
+                                [term]: { ...dates, end: e.target.value }
+                              }
+                            }
+                          }))}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Grading Scale Configuration */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <GraduationCap className="h-5 w-5" />
+                  Grading Scale
+                </CardTitle>
+                <CardDescription>Configure grading system and boundaries</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="gradingScale">Grading Scale Type</Label>
+                  <Select
+                    value={settings.grading.scale}
+                    onValueChange={(value) => setSettings(prev => ({
+                      ...prev,
+                      grading: { ...prev.grading, scale: value }
+                    }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A-F">A-F Scale</SelectItem>
+                      <SelectItem value="1-5">1-5 Scale</SelectItem>
+                      <SelectItem value="percentage">Percentage Only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="passMark">Pass Mark Percentage</Label>
+                  <Input
+                    id="passMark"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={settings.grading.passMarkPercentage}
+                    onChange={(e) => setSettings(prev => ({
+                      ...prev,
+                      grading: { ...prev.grading, passMarkPercentage: parseInt(e.target.value) }
+                    }))}
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Grade Boundaries</Label>
+                  {Object.entries(settings.grading.gradeBoundaries).map(([grade, boundary]) => (
+                    <div key={grade} className="flex items-center gap-2">
+                      <Badge variant="outline" className="w-8 justify-center">{grade}</Badge>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={boundary.min}
+                        onChange={(e) => setSettings(prev => ({
+                          ...prev,
+                          grading: {
+                            ...prev.grading,
+                            gradeBoundaries: {
+                              ...prev.grading.gradeBoundaries,
+                              [grade]: { ...boundary, min: parseInt(e.target.value) }
+                            }
+                          }
+                        }))}
+                        className="w-20"
+                      />
+                      <span className="text-sm text-muted-foreground">-</span>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={boundary.max}
+                        onChange={(e) => setSettings(prev => ({
+                          ...prev,
+                          grading: {
+                            ...prev.grading,
+                            gradeBoundaries: {
+                              ...prev.grading.gradeBoundaries,
+                              [grade]: { ...boundary, max: parseInt(e.target.value) }
+                            }
+                          }
+                        }))}
+                        className="w-20"
+                      />
+                      <span className="text-sm text-muted-foreground">%</span>
+                    </div>
+                  ))}
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm">Show Class Positions</Label>
+                      <div className="text-xs text-muted-foreground">Display student ranking in results</div>
+                    </div>
+                    <Switch
+                      checked={settings.grading.showPositions}
+                      onCheckedChange={(checked) => setSettings(prev => ({
+                        ...prev,
+                        grading: { ...prev.grading, showPositions: checked }
+                      }))}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm">Calculate GPA</Label>
+                      <div className="text-xs text-muted-foreground">Automatically calculate grade point average</div>
+                    </div>
+                    <Switch
+                      checked={settings.grading.calculateGPA}
+                      onCheckedChange={(checked) => setSettings(prev => ({
+                        ...prev,
+                        grading: { ...prev.grading, calculateGPA: checked }
+                      }))}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        {/* Notifications Settings Tab */}
+        <TabsContent value="notifications" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Notification Channels */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Notification Channels
+                </CardTitle>
+                <CardDescription>Configure available communication channels</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-4 w-4" />
+                      <div>
+                        <div className="font-medium">Email Notifications</div>
+                        <div className="text-xs text-muted-foreground">Send notifications via email</div>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={settings.notifications.emailEnabled}
+                      onCheckedChange={(checked) => setSettings(prev => ({
+                        ...prev,
+                        notifications: { ...prev.notifications, emailEnabled: checked }
+                      }))}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Smartphone className="h-4 w-4" />
+                      <div>
+                        <div className="font-medium">SMS Notifications</div>
+                        <div className="text-xs text-muted-foreground">Send notifications via SMS</div>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={settings.notifications.smsEnabled}
+                      onCheckedChange={(checked) => setSettings(prev => ({
+                        ...prev,
+                        notifications: { ...prev.notifications, smsEnabled: checked }
+                      }))}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Bell className="h-4 w-4" />
+                      <div>
+                        <div className="font-medium">App Notifications</div>
+                        <div className="text-xs text-muted-foreground">In-app notification system</div>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={settings.notifications.appNotificationsEnabled}
+                      onCheckedChange={(checked) => setSettings(prev => ({
+                        ...prev,
+                        notifications: { ...prev.notifications, appNotificationsEnabled: checked }
+                      }))}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Zap className="h-4 w-4" />
+                      <div>
+                        <div className="font-medium">Push Notifications</div>
+                        <div className="text-xs text-muted-foreground">Browser push notifications</div>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={settings.notifications.pushNotificationsEnabled}
+                      onCheckedChange={(checked) => setSettings(prev => ({
+                        ...prev,
+                        notifications: { ...prev.notifications, pushNotificationsEnabled: checked }
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <Label>Default Notification Channels</Label>
+                  <div className="space-y-2">
+                    {["Email", "SMS", "App", "Push"].map(channel => (
+                      <div key={channel} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={channel}
+                          checked={settings.notifications.defaultChannels.includes(channel)}
+                          onCheckedChange={(checked) => {
+                            const channels = checked
+                              ? [...settings.notifications.defaultChannels, channel]
+                              : settings.notifications.defaultChannels.filter(c => c !== channel)
+                            setSettings(prev => ({
+                              ...prev,
+                              notifications: { ...prev.notifications, defaultChannels: channels }
+                            }))
+                          }}
+                        />
+                        <Label htmlFor={channel} className="text-sm">{channel}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Automated Reminders */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Automated Reminders
+                </CardTitle>
+                <CardDescription>Configure automatic notification triggers</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">Exam Reminders</div>
+                      <div className="text-xs text-muted-foreground">Notify students before exams</div>
+                    </div>
+                    <Switch
+                      checked={settings.notifications.reminderSettings.examReminders}
+                      onCheckedChange={(checked) => setSettings(prev => ({
+                        ...prev,
+                        notifications: {
+                          ...prev.notifications,
+                          reminderSettings: { ...prev.notifications.reminderSettings, examReminders: checked }
+                        }
+                      }))}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">Fee Reminders</div>
+                      <div className="text-xs text-muted-foreground">Notify parents about fee payments</div>
+                    </div>
+                    <Switch
+                      checked={settings.notifications.reminderSettings.feeReminders}
+                      onCheckedChange={(checked) => setSettings(prev => ({
+                        ...prev,
+                        notifications: {
+                          ...prev.notifications,
+                          reminderSettings: { ...prev.notifications.reminderSettings, feeReminders: checked }
+                        }
+                      }))}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">Event Reminders</div>
+                      <div className="text-xs text-muted-foreground">Notify about school events</div>
+                    </div>
+                    <Switch
+                      checked={settings.notifications.reminderSettings.eventReminders}
+                      onCheckedChange={(checked) => setSettings(prev => ({
+                        ...prev,
+                        notifications: {
+                          ...prev.notifications,
+                          reminderSettings: { ...prev.notifications.reminderSettings, eventReminders: checked }
+                        }
+                      }))}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">Result Notifications</div>
+                      <div className="text-xs text-muted-foreground">Auto-notify when results are published</div>
+                    </div>
+                    <Switch
+                      checked={settings.notifications.reminderSettings.resultNotifications}
+                      onCheckedChange={(checked) => setSettings(prev => ({
+                        ...prev,
+                        notifications: {
+                          ...prev.notifications,
+                          reminderSettings: { ...prev.notifications.reminderSettings, resultNotifications: checked }
+                        }
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <Info className="h-4 w-4 text-blue-500 mt-0.5" />
+                    <div className="text-sm">
+                      <div className="font-medium">Reminder Timing</div>
+                      <div className="text-muted-foreground">
+                        Reminders are sent 24 hours before exams, 7 days before fee due dates, and immediately when results are published.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Integrations Settings Tab */}
+        <TabsContent value="integrations" className="space-y-6">
+          <div className="grid gap-6">
+            {/* Payment Gateway */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="h-5 w-5" />
+                  Payment Gateway Integration
+                </CardTitle>
+                <CardDescription>Configure payment processing for school fees</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">Enable Payment Gateway</div>
+                    <div className="text-xs text-muted-foreground">Allow online fee payments</div>
+                  </div>
+                  <Switch
+                    checked={settings.integrations.paymentGateway.enabled}
+                    onCheckedChange={(checked) => setSettings(prev => ({
+                      ...prev,
+                      integrations: {
+                        ...prev.integrations,
+                        paymentGateway: { ...prev.integrations.paymentGateway, enabled: checked }
+                      }
+                    }))}
+                  />
+                </div>
+
+                {settings.integrations.paymentGateway.enabled && (
+                  <div className="space-y-4 border-t pt-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>Payment Provider</Label>
+                        <Select
+                          value={settings.integrations.paymentGateway.provider}
+                          onValueChange={(value) => setSettings(prev => ({
+                            ...prev,
+                            integrations: {
+                              ...prev.integrations,
+                              paymentGateway: { ...prev.integrations.paymentGateway, provider: value }
+                            }
+                          }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="stripe">Stripe</SelectItem>
+                            <SelectItem value="paystack">Paystack</SelectItem>
+                            <SelectItem value="flutterwave">Flutterwave</SelectItem>
+                            <SelectItem value="paypal">PayPal</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>API Key</Label>
+                        <div className="relative">
+                          <Input
+                            type={showApiKey ? "text" : "password"}
+                            value={settings.integrations.paymentGateway.apiKey}
+                            onChange={(e) => setSettings(prev => ({
+                              ...prev,
+                              integrations: {
+                                ...prev.integrations,
+                                paymentGateway: { ...prev.integrations.paymentGateway, apiKey: e.target.value }
+                              }
+                            }))}
+                            placeholder="Enter API key"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3"
+                            onClick={() => setShowApiKey(!showApiKey)}
+                          >
+                            {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Webhook URL</Label>
+                      <Input
+                        value={settings.integrations.paymentGateway.webhookUrl}
+                        onChange={(e) => setSettings(prev => ({
+                          ...prev,
+                          integrations: {
+                            ...prev.integrations,
+                            paymentGateway: { ...prev.integrations.paymentGateway, webhookUrl: e.target.value }
+                          }
+                        }))}
+                        placeholder="https://your-domain.com/webhook/payments"
+                      />
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Email Service */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  Email Service Configuration
+                </CardTitle>
+                <CardDescription>Configure email delivery service</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Email Provider</Label>
+                    <Select
+                      value={settings.integrations.emailService.provider}
+                      onValueChange={(value) => setSettings(prev => ({
+                        ...prev,
+                        integrations: {
+                          ...prev.integrations,
+                          emailService: { ...prev.integrations.emailService, provider: value }
+                        }
+                      }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="smtp">SMTP</SelectItem>
+                        <SelectItem value="sendgrid">SendGrid</SelectItem>
+                        <SelectItem value="mailgun">Mailgun</SelectItem>
+                        <SelectItem value="ses">Amazon SES</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>API Key / Password</Label>
+                    <Input
+                      type="password"
+                      value={settings.integrations.emailService.apiKey}
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
+                        integrations: {
+                          ...prev.integrations,
+                          emailService: { ...prev.integrations.emailService, apiKey: e.target.value }
+                        }
+                      }))}
+                      placeholder="Enter API key or password"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>From Email</Label>
+                    <Input
+                      type="email"
+                      value={settings.integrations.emailService.fromEmail}
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
+                        integrations: {
+                          ...prev.integrations,
+                          emailService: { ...prev.integrations.emailService, fromEmail: e.target.value }
+                        }
+                      }))}
+                      placeholder="noreply@school.edu"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>From Name</Label>
+                    <Input
+                      value={settings.integrations.emailService.fromName}
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
+                        integrations: {
+                          ...prev.integrations,
+                          emailService: { ...prev.integrations.emailService, fromName: e.target.value }
+                        }
+                      }))}
+                      placeholder="School Management System"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* SMS Service */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Smartphone className="h-5 w-5" />
+                  SMS Service Configuration
+                </CardTitle>
+                <CardDescription>Configure SMS delivery service</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label>SMS Provider</Label>
+                    <Select
+                      value={settings.integrations.smsService.provider}
+                      onValueChange={(value) => setSettings(prev => ({
+                        ...prev,
+                        integrations: {
+                          ...prev.integrations,
+                          smsService: { ...prev.integrations.smsService, provider: value }
+                        }
+                      }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="twilio">Twilio</SelectItem>
+                        <SelectItem value="nexmo">Nexmo</SelectItem>
+                        <SelectItem value="africasTalking">Africa's Talking</SelectItem>
+                        <SelectItem value="bulk-sms">Bulk SMS</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>API Key</Label>
+                    <Input
+                      type="password"
+                      value={settings.integrations.smsService.apiKey}
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
+                        integrations: {
+                          ...prev.integrations,
+                          smsService: { ...prev.integrations.smsService, apiKey: e.target.value }
+                        }
+                      }))}
+                      placeholder="Enter API key"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Sender ID</Label>
+                    <Input
+                      value={settings.integrations.smsService.senderId}
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
+                        integrations: {
+                          ...prev.integrations,
+                          smsService: { ...prev.integrations.smsService, senderId: e.target.value }
+                        }
+                      }))}
+                      placeholder="SCHOOL"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Users Management Tab */}
+        <TabsContent value="users" className="space-y-4">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>User Roles</CardTitle>
+                <CardDescription>Manage user roles and permissions</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  {settings.userManagement.roles.map((role, index) => (
+                    <div key={index} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h4 className="font-medium">{role.name}</h4>
+                          <p className="text-sm text-muted-foreground">{role.description}</p>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">Edit</Button>
+                          <Button variant="outline" size="sm" className="text-red-600">Delete</Button>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        {role.permissions.map((permission, permIndex) => (
+                          <div key={permIndex} className="flex items-center space-x-2">
+                            <Switch 
+                              checked={permission.granted}
+                              onCheckedChange={(checked) => {
+                                const newSettings = { ...settings }
+                                newSettings.userManagement.roles[index].permissions[permIndex].granted = checked
+                                setSettings(newSettings)
+                              }}
+                            />
+                            <Label className="text-sm">{permission.name}</Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Button>Add New Role</Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Active Users</CardTitle>
+                <CardDescription>View and manage user accounts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex space-x-2">
+                      <Input placeholder="Search users..." className="w-64" />
+                      <Select>
+                        <SelectTrigger className="w-32">
+                          <SelectValue placeholder="Role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Roles</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="teacher">Teacher</SelectItem>
+                          <SelectItem value="student">Student</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button>Invite User</Button>
+                  </div>
+                  <div className="border rounded-lg">
+                    <table className="w-full">
+                      <thead className="border-b">
+                        <tr>
+                          <th className="text-left p-4">Name</th>
+                          <th className="text-left p-4">Email</th>
+                          <th className="text-left p-4">Role</th>
+                          <th className="text-left p-4">Status</th>
+                          <th className="text-left p-4">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {settings.userManagement.users.map((user, index) => (
+                          <tr key={index} className="border-b">
+                            <td className="p-4">{user.name}</td>
+                            <td className="p-4">{user.email}</td>
+                            <td className="p-4">{user.role}</td>
+                            <td className="p-4">
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                user.status === 'active' ? 'bg-green-100 text-green-800' :
+                                user.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {user.status}
+                              </span>
+                            </td>
+                            <td className="p-4">
+                              <div className="flex space-x-2">
+                                <Button variant="outline" size="sm">Edit</Button>
+                                <Button variant="outline" size="sm" className="text-red-600">Suspend</Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Security Tab */}
+        <TabsContent value="security" className="space-y-4">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Password Policy</CardTitle>
+                <CardDescription>Configure password requirements for users</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="minLength">Minimum Length</Label>
+                    <Input 
+                      id="minLength"
+                      type="number" 
+                      value={settings.security.passwordPolicy.minLength}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        security: {
+                          ...settings.security,
+                          passwordPolicy: {
+                            ...settings.security.passwordPolicy,
+                            minLength: parseInt(e.target.value)
+                          }
+                        }
+                      })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="maxAttempts">Max Login Attempts</Label>
+                    <Input 
+                      id="maxAttempts"
+                      type="number" 
+                      value={settings.security.loginAttempts.maxAttempts}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        security: {
+                          ...settings.security,
+                          loginAttempts: {
+                            ...settings.security.loginAttempts,
+                            maxAttempts: parseInt(e.target.value)
+                          }
+                        }
+                      })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      checked={settings.security.passwordPolicy.requireSpecialChar}
+                      onCheckedChange={(checked) => setSettings({
+                        ...settings,
+                        security: {
+                          ...settings.security,
+                          passwordPolicy: {
+                            ...settings.security.passwordPolicy,
+                            requireSpecialChar: checked
+                          }
+                        }
+                      })}
+                    />
+                    <Label>Require Special Characters</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      checked={settings.security.passwordPolicy.requireNumbers}
+                      onCheckedChange={(checked) => setSettings({
+                        ...settings,
+                        security: {
+                          ...settings.security,
+                          passwordPolicy: {
+                            ...settings.security.passwordPolicy,
+                            requireNumbers: checked
+                          }
+                        }
+                      })}
+                    />
+                    <Label>Require Numbers</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      checked={settings.security.passwordPolicy.requireMixedCase}
+                      onCheckedChange={(checked) => setSettings({
+                        ...settings,
+                        security: {
+                          ...settings.security,
+                          passwordPolicy: {
+                            ...settings.security.passwordPolicy,
+                            requireMixedCase: checked
+                          }
+                        }
+                      })}
+                    />
+                    <Label>Require Mixed Case</Label>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Session Management</CardTitle>
+                <CardDescription>Configure user session settings</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="sessionTimeout">Session Timeout (minutes)</Label>
+                  <Input 
+                    id="sessionTimeout"
+                    type="number" 
+                    value={settings.security.sessionTimeout}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      security: {
+                        ...settings.security,
+                        sessionTimeout: parseInt(e.target.value)
+                      }
+                    })}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    checked={settings.security.twoFactorAuth}
+                    onCheckedChange={(checked) => setSettings({
+                      ...settings,
+                      security: {
+                        ...settings.security,
+                        twoFactorAuth: checked
+                      }
+                    })}
+                  />
+                  <Label>Require Two-Factor Authentication</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    checked={settings.security.ipWhitelist.enabled}
+                    onCheckedChange={(checked) => setSettings({
+                      ...settings,
+                      security: {
+                        ...settings.security,
+                        ipWhitelist: {
+                          ...settings.security.ipWhitelist,
+                          enabled: checked
+                        }
+                      }
+                    })}
+                  />
+                  <Label>Enable IP Whitelist</Label>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Audit Log</CardTitle>
+                <CardDescription>System activity and security events</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex space-x-2">
+                      <Input placeholder="Search logs..." className="w-64" />
+                      <Select>
+                        <SelectTrigger className="w-40">
+                          <SelectValue placeholder="Event Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Events</SelectItem>
+                          <SelectItem value="login">Login</SelectItem>
+                          <SelectItem value="logout">Logout</SelectItem>
+                          <SelectItem value="password_change">Password Change</SelectItem>
+                          <SelectItem value="permission_change">Permission Change</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button variant="outline">Export Logs</Button>
+                  </div>
+                  <div className="border rounded-lg max-h-80 overflow-y-auto">
+                    <table className="w-full">
+                      <thead className="border-b bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="text-left p-4">Timestamp</th>
+                          <th className="text-left p-4">User</th>
+                          <th className="text-left p-4">Event</th>
+                          <th className="text-left p-4">IP Address</th>
+                          <th className="text-left p-4">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {settings.security.auditLog.map((log, index) => (
+                          <tr key={index} className="border-b hover:bg-gray-50">
+                            <td className="p-4 text-sm">{new Date(log.timestamp).toLocaleString()}</td>
+                            <td className="p-4">{log.user}</td>
+                            <td className="p-4">{log.event}</td>
+                            <td className="p-4">{log.ipAddress}</td>
+                            <td className="p-4">
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                log.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                                {log.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Save Button */}
+      <div className="flex justify-end pt-6 border-t">
+        <Button onClick={handleSave} className="w-32">
+          Save Settings
+        </Button>
+      </div>
+    </div>
+  )
+}

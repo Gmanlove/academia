@@ -1,0 +1,598 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { 
+  Bell,
+  Plus,
+  Send,
+  Schedule,
+  Eye,
+  Edit,
+  Trash2,
+  MoreHorizontal,
+  Mail,
+  MessageSquare,
+  Smartphone,
+  Users,
+  School,
+  GraduationCap,
+  Target,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  BarChart3,
+  Filter,
+  Search,
+  Calendar as CalendarIcon,
+  FileText,
+  Copy,
+  Download,
+  Upload
+} from "lucide-react"
+import { db } from "@/lib/mock-db"
+import { NotificationItem, NotificationTemplate, NotificationChannel, NotificationStatus } from "@/lib/types"
+
+export default function NotificationsPage() {
+  const [notifications, setNotifications] = useState<NotificationItem[]>([])
+  const [templates, setTemplates] = useState<NotificationTemplate[]>([])
+  const [loading, setLoading] = useState(true)
+  
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<NotificationStatus | "all">("all")
+  const [deliveryFilter, setDeliveryFilter] = useState<NotificationChannel | "all">("all")
+  
+  // Create notification states
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("")
+  const [notificationData, setNotificationData] = useState({
+    title: "",
+    message: "",
+    audience: "School" as NotificationItem["audience"],
+    delivery: "Email" as NotificationChannel,
+    priority: "Medium" as NotificationItem["priority"],
+    scheduledFor: "",
+    recipientIds: [] as string[]
+  })
+
+  useEffect(() => {
+    // Simulate API calls
+    setTimeout(() => {
+      const notificationList = generateMockNotifications()
+      const templateList = generateMockTemplates()
+      setNotifications(notificationList)
+      setTemplates(templateList)
+      setLoading(false)
+    }, 500)
+  }, [])
+
+  const generateMockNotifications = (): NotificationItem[] => {
+    return [
+      {
+        id: "1",
+        title: "Term Results Released",
+        message: "Dear Parents/Students, the Term 2 results have been released. Please check your portal for detailed scores.",
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        audience: "School",
+        delivery: "Email",
+        status: "Sent",
+        priority: "High",
+        metadata: {
+          emailsSent: 450,
+          deliveryRate: 98.7,
+          openRate: 87.3
+        }
+      },
+      {
+        id: "2",
+        title: "Parent-Teacher Meeting",
+        message: "Scheduled parent-teacher meeting for JSS 2 students on Friday, 15th March 2024.",
+        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        scheduledFor: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        audience: "Class",
+        delivery: "SMS",
+        status: "Scheduled",
+        priority: "Medium",
+        metadata: {
+          smssSent: 0,
+          deliveryRate: 0,
+          openRate: 0
+        }
+      }
+    ]
+  }
+
+  const generateMockTemplates = (): NotificationTemplate[] => {
+    return [
+      {
+        id: "1",
+        name: "Result Release Announcement",
+        category: "Academic",
+        subject: "{{termName}} Results Released",
+        message: "Dear {{parentName}}, the {{termName}} results for {{studentName}} have been released.",
+        variables: ["termName", "parentName", "studentName"],
+        isSystem: true,
+        createdBy: "system",
+        createdAt: new Date().toISOString()
+      }
+    ]
+  }
+
+  const filteredNotifications = notifications.filter(notification => {
+    const matchesSearch = notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         notification.message.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === "all" || notification.status === statusFilter
+    const matchesDelivery = deliveryFilter === "all" || notification.delivery === deliveryFilter
+    
+    return matchesSearch && matchesStatus && matchesDelivery
+  })
+
+  const handleCreateNotification = () => {
+    const newNotification: NotificationItem = {
+      id: (notifications.length + 1).toString(),
+      ...notificationData,
+      createdAt: new Date().toISOString(),
+      status: notificationData.scheduledFor ? "Scheduled" : "Sent",
+      metadata: {
+        emailsSent: 0,
+        smssSent: 0,
+        deliveryRate: 0,
+        openRate: 0
+      }
+    }
+    
+    setNotifications([newNotification, ...notifications])
+    setIsCreateDialogOpen(false)
+    
+    // Reset form
+    setNotificationData({
+      title: "",
+      message: "",
+      audience: "School",
+      delivery: "Email",
+      priority: "Medium",
+      scheduledFor: "",
+      recipientIds: []
+    })
+  }
+
+  const getStatusIcon = (status: NotificationStatus) => {
+    switch (status) {
+      case "Sent":
+        return <CheckCircle className="h-4 w-4 text-green-600" />
+      case "Failed":
+        return <XCircle className="h-4 w-4 text-red-600" />
+      case "Scheduled":
+        return <Clock className="h-4 w-4 text-blue-600" />
+      default:
+        return <AlertCircle className="h-4 w-4 text-orange-600" />
+    }
+  }
+
+  const getDeliveryIcon = (delivery: NotificationChannel) => {
+    switch (delivery) {
+      case "Email":
+        return <Mail className="h-4 w-4" />
+      case "SMS":
+        return <Smartphone className="h-4 w-4" />
+      case "App":
+        return <Bell className="h-4 w-4" />
+      default:
+        return <MessageSquare className="h-4 w-4" />
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-muted rounded w-64"></div>
+          <div className="h-4 bg-muted rounded w-96"></div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Notification Center</h1>
+          <p className="text-muted-foreground">
+            Manage and monitor all school communications
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm">
+            <Download className="mr-2 h-4 w-4" />
+            Export History
+          </Button>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Notification
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Create Bulk Notification</DialogTitle>
+                <DialogDescription>
+                  Send notifications to multiple recipients
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Title/Subject</Label>
+                    <Input
+                      id="title"
+                      value={notificationData.title}
+                      onChange={(e) => setNotificationData(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="Enter notification title"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="priority">Priority</Label>
+                    <Select 
+                      value={notificationData.priority} 
+                      onValueChange={(value) => setNotificationData(prev => ({ ...prev, priority: value as NotificationItem["priority"] }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Low">Low</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                        <SelectItem value="Urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="message">Message</Label>
+                  <Textarea
+                    id="message"
+                    rows={6}
+                    value={notificationData.message}
+                    onChange={(e) => setNotificationData(prev => ({ ...prev, message: e.target.value }))}
+                    placeholder="Enter your message here..."
+                  />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label>Audience</Label>
+                    <Select 
+                      value={notificationData.audience} 
+                      onValueChange={(value) => setNotificationData(prev => ({ ...prev, audience: value as NotificationItem["audience"] }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="School">Entire School</SelectItem>
+                        <SelectItem value="Class">Specific Class</SelectItem>
+                        <SelectItem value="Student">Individual Student</SelectItem>
+                        <SelectItem value="Teacher">Teachers</SelectItem>
+                        <SelectItem value="Parent">Parents</SelectItem>
+                        <SelectItem value="Custom">Custom Selection</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Delivery Method</Label>
+                    <Select 
+                      value={notificationData.delivery} 
+                      onValueChange={(value) => setNotificationData(prev => ({ ...prev, delivery: value as NotificationChannel }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Email">Email</SelectItem>
+                        <SelectItem value="SMS">SMS</SelectItem>
+                        <SelectItem value="App">App Notification</SelectItem>
+                        <SelectItem value="All">All Channels</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Schedule (Optional)</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start text-left">
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {notificationData.scheduledFor ? 
+                            new Date(notificationData.scheduledFor).toLocaleDateString() : 
+                            "Send Now"
+                          }
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={notificationData.scheduledFor ? new Date(notificationData.scheduledFor) : undefined}
+                          onSelect={(date) => setNotificationData(prev => ({ 
+                            ...prev, 
+                            scheduledFor: date ? date.toISOString() : "" 
+                          }))}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCreateNotification}>
+                  {notificationData.scheduledFor ? (
+                    <>
+                      <Schedule className="mr-2 h-4 w-4" />
+                      Schedule
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4" />
+                      Send Now
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Stats Overview */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Sent</CardTitle>
+            <Send className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {notifications.filter(n => n.status === "Sent").length}
+            </div>
+            <p className="text-xs text-muted-foreground">This month</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Delivery Rate</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">96.2%</div>
+            <p className="text-xs text-muted-foreground">Average delivery</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Open Rate</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">73.8%</div>
+            <p className="text-xs text-muted-foreground">Recipients opened</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Scheduled</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {notifications.filter(n => n.status === "Scheduled").length}
+            </div>
+            <p className="text-xs text-muted-foreground">Pending delivery</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Notifications List */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            Notification History
+          </CardTitle>
+          <CardDescription>Track and manage all sent notifications</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4 mb-6">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search notifications..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+            </div>
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as NotificationStatus | "all")}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="Sent">Sent</SelectItem>
+                <SelectItem value="Scheduled">Scheduled</SelectItem>
+                <SelectItem value="Failed">Failed</SelectItem>
+                <SelectItem value="Pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={deliveryFilter} onValueChange={(value) => setDeliveryFilter(value as NotificationChannel | "all")}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All Delivery" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Delivery</SelectItem>
+                <SelectItem value="Email">Email</SelectItem>
+                <SelectItem value="SMS">SMS</SelectItem>
+                <SelectItem value="App">App</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Audience</TableHead>
+                <TableHead>Delivery</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Sent/Scheduled</TableHead>
+                <TableHead>Performance</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredNotifications.map((notification) => (
+                <TableRow key={notification.id}>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">{notification.title}</div>
+                      <div className="text-sm text-muted-foreground truncate max-w-xs">
+                        {notification.message}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{notification.audience}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {getDeliveryIcon(notification.delivery)}
+                      <span>{notification.delivery}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(notification.status)}
+                      <Badge variant={
+                        notification.status === "Sent" ? "default" :
+                        notification.status === "Failed" ? "destructive" :
+                        notification.status === "Scheduled" ? "secondary" :
+                        "outline"
+                      }>
+                        {notification.status}
+                      </Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={
+                      notification.priority === "Urgent" || notification.priority === "High" ? "destructive" :
+                      notification.priority === "Medium" ? "default" :
+                      "secondary"
+                    }>
+                      {notification.priority}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      {notification.scheduledFor ? 
+                        new Date(notification.scheduledFor).toLocaleDateString() :
+                        new Date(notification.createdAt).toLocaleDateString()
+                      }
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {notification.metadata && (
+                      <div className="text-sm">
+                        <div>{notification.metadata.deliveryRate?.toFixed(1)}% delivered</div>
+                        <div className="text-muted-foreground">
+                          {notification.metadata.openRate?.toFixed(1)}% opened
+                        </div>
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Copy className="mr-2 h-4 w-4" />
+                          Duplicate
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit Template
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-red-600">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
