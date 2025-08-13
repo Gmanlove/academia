@@ -26,7 +26,6 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table"
-import { db } from "@/lib/mock-db"
 import { Student, School, ClassRoom, Subject, ResultEntry } from "@/lib/types"
 import {
   ArrowLeft,
@@ -65,30 +64,30 @@ export default function StudentProfilePage() {
   const [studentClass, setStudentClass] = useState<ClassRoom | null>(null)
   const [results, setResults] = useState<ResultEntry[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Load student data
-    const studentData = db.getStudent(studentId)
-    if (studentData) {
-      setStudent(studentData)
-      
-      // Load related data
-      const schoolData = db.getSchool(studentData.schoolId)
-      setSchool(schoolData)
-      
-      const classData = db.getClass(studentData.classId)
-      setStudentClass(classData)
-      
-      // Load student results
-      const studentResults = db.getStudentResults(studentId)
-      setResults(studentResults || [])
-      
-      // Load subjects
-      if (classData) {
-        const classSubjects = classData.subjectIds.map(id => db.getSubject(id)).filter(Boolean)
-        setSubjects(classSubjects)
+    const fetchStudentData = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        // For now, setting empty values since we need to create student detail API endpoints
+        setStudent(null)
+        setSchool(null)
+        setStudentClass(null)
+        setResults([])
+        setSubjects([])
+      } catch (err) {
+        console.error("Error fetching student data:", err)
+        setError("Failed to load student data")
+      } finally {
+        setIsLoading(false)
       }
     }
+
+    fetchStudentData()
   }, [studentId])
 
   if (!student) {

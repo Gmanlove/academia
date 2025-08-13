@@ -50,7 +50,6 @@ import {
   AlertCircle,
   MessageSquare
 } from "lucide-react"
-import { db } from "@/lib/mock-db"
 import { Student, ResultEntry, Subject } from "@/lib/types"
 
 export default function StudentResultsPage() {
@@ -65,29 +64,58 @@ export default function StudentResultsPage() {
   const [trendData, setTrendData] = useState<any[]>([])
   const [goals, setGoals] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string>("")
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [shareEmail, setShareEmail] = useState("")
 
   useEffect(() => {
-    // Simulate API calls
-    setTimeout(() => {
-      const students = db.listStudents()
-      const studentData = students[0]
-      const subjectsData = db.listSubjects() || []
-      const resultsData = db.listResults({ studentId: studentData.id }) || []
-      const performance = generatePerformanceData(subjectsData, resultsData)
-      const trends = generateTrendData(resultsData)
-      const studentGoals = generateGoals(subjectsData)
+    const fetchData = async () => {
+      setLoading(true)
+      setError("")
+      
+      try {
+        // Fetch student profile, subjects, and results in parallel
+        const [studentResponse, subjectsResponse, resultsResponse] = await Promise.all([
+          fetch('/api/student/profile'),
+          fetch('/api/subjects'),
+          fetch('/api/results')
+        ])
 
-      setStudent(studentData)
-      setSubjects(subjectsData)
-      setResults(resultsData)
-      setFilteredResults(resultsData)
-      setPerformanceData(performance)
-      setTrendData(trends)
-      setGoals(studentGoals)
-      setLoading(false)
-    }, 1000)
+        if (!studentResponse.ok || !subjectsResponse.ok || !resultsResponse.ok) {
+          throw new Error('Failed to fetch data')
+        }
+
+        const [studentResult, subjectsResult, resultsResult] = await Promise.all([
+          studentResponse.json(),
+          subjectsResponse.json(),
+          resultsResponse.json()
+        ])
+
+        const studentData = studentResult.data
+        const subjectsData = subjectsResult.data || []
+        const resultsData = resultsResult.data || []
+
+        // Generate performance analytics
+        const performance = generatePerformanceData(subjectsData, resultsData)
+        const trends = generateTrendData(resultsData)
+        const studentGoals = generateGoals(subjectsData)
+
+        setStudent(studentData)
+        setSubjects(subjectsData)
+        setResults(resultsData)
+        setFilteredResults(resultsData)
+        setPerformanceData(performance)
+        setTrendData(trends)
+        setGoals(studentGoals)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+        setError('Failed to load student data. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
   }, [])
 
   useEffect(() => {

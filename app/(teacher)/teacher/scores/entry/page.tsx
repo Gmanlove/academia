@@ -28,7 +28,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { db } from "@/lib/mock-db"
 import type { Student, Subject, ClassRoom, ResultEntry } from "@/lib/types"
 import {
   Save,

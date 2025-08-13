@@ -24,8 +24,11 @@ import {
   Clock,
   AlertTriangle,
   Copy,
-  RefreshCw
+  RefreshCw,
+  TestTube,
+  Send
 } from "lucide-react"
+import Link from "next/link"
 
 export default function DevHelperPage() {
   const [users, setUsers] = useState<any[]>([])
@@ -197,6 +200,24 @@ export default function DevHelperPage() {
                     {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                     Resend
                   </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Testing Tools</Label>
+                <div className="flex gap-2">
+                  <Link href="/dev-helper/test-email">
+                    <Button variant="outline" size="sm">
+                      <TestTube className="h-4 w-4 mr-1" />
+                      Email Flow Test
+                    </Button>
+                  </Link>
+                  <Link href="/dev-helper/create-admin">
+                    <Button variant="outline" size="sm">
+                      <User className="h-4 w-4 mr-1" />
+                      Create Admin
+                    </Button>
+                  </Link>
                 </div>
               </div>
               

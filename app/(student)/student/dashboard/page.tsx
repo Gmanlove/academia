@@ -38,7 +38,6 @@ import {
   AlertCircle,
   ChevronRight
 } from "lucide-react"
-import { db } from "@/lib/mock-db"
 import { Student, ResultEntry, Subject } from "@/lib/types"
 
 export default function StudentDashboardPage() {
@@ -55,9 +54,9 @@ export default function StudentDashboardPage() {
   useEffect(() => {
     // Simulate API calls
     setTimeout(() => {
-      const students = db.listStudents()
-      const studentData = students[0]
-      const subjectsData = db.listSubjects() || []
+      // For now using empty data since we need to create student API endpoints
+      const studentData = null
+      const subjectsData: any[] = []
       const results = generateRecentResults()
       const assessments = generateUpcomingAssessments()
       const notifs = generateNotifications()

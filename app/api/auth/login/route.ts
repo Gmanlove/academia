@@ -1,241 +1,113 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAllUsers, updateUser } from '@/lib/data-store'
-
-interface LoginRequest {
-  username: string
-  password: string
-  role: string
-  schoolId?: string
-  rememberMe: boolean
-}
-
-interface User {
-  id: string
-  username: string
-  role: string
-  schoolId: string
-  name: string
-  email: string
-  permissions: string[]
-  lastLogin?: string
-  emailVerified?: boolean
-  status?: string
-}
-
-// Demo users database - These are pre-verified demo accounts
-const demoUsers: Record<string, User> = {
-  'admin': {
-    id: 'ADM-001',
-    username: 'admin',
-    role: 'admin',
-    schoolId: 'SYS-001',
-    name: 'System Administrator',
-    email: 'admin@academia.edu',
-    permissions: ['read', 'write', 'delete', 'manage_users', 'manage_schools', 'view_analytics'],
-    lastLogin: '2025-08-09T10:30:00Z',
-    emailVerified: true,
-    status: 'active'
-  },
-  'teacher': {
-    id: 'TCH-001',
-    username: 'teacher',
-    role: 'teacher',
-    schoolId: 'SCH-001',
-    name: 'John Teacher',
-    email: 'teacher@academia.edu',
-    permissions: ['read', 'write', 'manage_scores', 'view_students', 'send_notifications'],
-    lastLogin: '2025-08-09T09:15:00Z',
-    emailVerified: true,
-    status: 'active'
-  },
-  'student': {
-    id: 'STU-001',
-    username: 'student',
-    role: 'student',
-    schoolId: 'SCH-001',
-    name: 'Jane Student',
-    email: 'student@academia.edu',
-    permissions: ['read', 'view_results', 'download_transcripts'],
-    lastLogin: '2025-08-09T08:45:00Z',
-    emailVerified: true,
-    status: 'active'
-  }
-}
-
-// Import registered users from register route (in production, this would be a shared database)
-
-// Demo passwords (in production, these would be hashed)
-const demoPasswords: Record<string, string> = {
-  'admin': 'admin123',
-  'teacher': 'teach123',
-  'student': 'stud123'
-}
-
-function generateToken(): string {
-  return 'AUTH_' + Math.random().toString(36).substr(2, 9).toUpperCase()
-}
-
-function generateSessionId(): string {
-  return 'SES_' + Math.random().toString(36).substr(2, 12).toUpperCase()
-}
-
-function getRolePermissions(role: string): string[] {
-  switch (role) {
-    case 'admin':
-      return ['read', 'write', 'delete', 'manage_users', 'manage_schools', 'view_analytics']
-    case 'teacher':
-      return ['read', 'write', 'manage_scores', 'view_students', 'send_notifications']
-    case 'student':
-      return ['read', 'view_results', 'download_transcripts']
-    default:
-      return ['read']
-  }
-}
+import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
   try {
-    const body: LoginRequest = await request.json()
-    const { username, password, role, schoolId, rememberMe } = body
+    const body = await request.json()
+    console.log('Login request body:', body)
+    
+    // Handle both email and username fields (frontend sends username)
+    const email = body.email || body.username
+    const { password } = body
 
-    // Validate required fields
-    if (!username || !password || !role) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+    if (!email || !password) {
+      console.log('Missing email or password:', { email: !!email, password: !!password })
+      return NextResponse.json({ 
+        error: 'Email and password are required' 
+      }, { status: 400 })
     }
 
-    let user: User | undefined
+    const supabase = await createClient()
 
-    // First check demo users (these are pre-verified)
-    if (demoUsers[username] && demoPasswords[username] === password) {
-      user = demoUsers[username]
-    } else {
-      // Check registered users
-      const allUsers = getAllUsers()
-      const registeredUser = allUsers.find(
-        u => (u.username === username || u.email === username) && 
-             u.password === `hashed_${password}` // In production, compare hashed passwords
-      )
+    console.log('Attempting login for:', email)
 
-      if (registeredUser) {
-        user = {
-          id: registeredUser.id,
-          username: registeredUser.username,
-          role: registeredUser.role,
-          schoolId: registeredUser.schoolId,
-          name: `${registeredUser.firstName} ${registeredUser.lastName}`,
-          email: registeredUser.email,
-          permissions: getRolePermissions(registeredUser.role),
-          lastLogin: registeredUser.lastLoginAt || undefined,
-          emailVerified: registeredUser.emailVerified,
-          status: registeredUser.status
-        }
+    // Sign in with Supabase
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+
+    if (error) {
+      console.error('Supabase login error:', error)
+      return NextResponse.json({ 
+        error: error.message 
+      }, { status: 401 })
+    }
+
+    if (!data.user) {
+      console.log('No user returned from Supabase')
+      return NextResponse.json({ 
+        error: 'Login failed' 
+      }, { status: 401 })
+    }
+
+    console.log('Login successful for user:', data.user.id)
+
+    // Check if user is verified
+    const { data: userProfile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('email_verified, status, role')
+      .eq('id', data.user.id)
+      .single()
+
+    if (profileError) {
+      console.error('Profile fetch error:', profileError)
+      return NextResponse.json({ 
+        error: 'Failed to fetch user profile' 
+      }, { status: 500 })
+    }
+
+    console.log('User profile:', userProfile)
+
+    if (!userProfile?.email_verified || userProfile?.status !== 'active') {
+      console.log('User not verified or not active:', userProfile)
+      return NextResponse.json({ 
+        error: 'Please verify your email before logging in',
+        needsVerification: true
+      }, { status: 403 })
+    }
+
+    // Update last login
+    await supabase
+      .from('user_profiles')
+      .update({ last_login: new Date().toISOString() })
+      .eq('id', data.user.id)
+
+    // Determine redirect based on role
+    let redirectPath = '/admin/dashboard' // default
+    if (userProfile?.role) {
+      switch (userProfile.role) {
+        case 'admin':
+          redirectPath = '/admin/dashboard'
+          break
+        case 'teacher':
+          redirectPath = '/teacher/dashboard'
+          break
+        case 'student':
+          redirectPath = '/student/dashboard'
+          break
+        default:
+          redirectPath = '/admin/dashboard'
       }
     }
 
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      )
-    }
-
-    // Check if email is verified (skip for demo users)
-    if (!demoUsers[username] && !user.emailVerified) {
-      return NextResponse.json(
-        { 
-          error: 'Email not verified', 
-          requiresVerification: true,
-          email: user.email 
-        },
-        { status: 403 }
-      )
-    }
-
-    // Check if account is active
-    if (user.status && user.status !== 'active') {
-      return NextResponse.json(
-        { 
-          error: 'Account is not active. Please contact support.',
-          status: user.status 
-        },
-        { status: 403 }
-      )
-    }
-
-    // Check role match
-    if (user.role !== role) {
-      return NextResponse.json(
-        { error: 'Role mismatch' },
-        { status: 401 }
-      )
-    }
-
-    // Check school ID for non-admin users
-    if (role !== 'admin' && schoolId && user.schoolId !== schoolId) {
-      return NextResponse.json(
-        { error: 'Invalid school ID' },
-        { status: 401 }
-      )
-    }
-
-    // Update last login for registered users
-    if (!demoUsers[username] && user) {
-      updateUser(user.id, {
-        lastLoginAt: new Date().toISOString()
-      })
-    }
-
-    // Generate session data
-    const token = generateToken()
-    const sessionId = generateSessionId()
-    const expiresAt = Date.now() + (rememberMe ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000)
-
-    // Update last login
-    user.lastLogin = new Date().toISOString()
-
-    // Create response
-    const authData = {
-      user: {
-        ...user,
-        lastLogin: user.lastLogin
-      },
-      token,
-      sessionId,
-      expiresAt,
-      loginTime: new Date().toISOString()
-    }
-
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       message: 'Login successful',
-      data: authData
+      user: {
+        id: data.user.id,
+        email: data.user.email,
+        role: userProfile?.role
+      },
+      redirectPath
     })
-
-    // Set HTTP-only cookies for security
-    response.cookies.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: rememberMe ? 7 * 24 * 60 * 60 : 24 * 60 * 60
-    })
-
-    response.cookies.set('session-id', sessionId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: rememberMe ? 7 * 24 * 60 * 60 : 24 * 60 * 60
-    })
-
-    return response
 
   } catch (error) {
-    console.error('Login error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Login endpoint error:', error)
+    return NextResponse.json({ 
+      error: 'Internal server error during login',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
 

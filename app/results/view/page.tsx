@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { db } from "@/lib/mock-db"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -131,28 +130,34 @@ export default function ResultViewPage() {
       return
     }
 
-    // Load student data
+    // Load student data (TODO: Replace with real API calls)
     setTimeout(() => {
-      const student = db.listStudents().find((s) => s.studentId === studentId)
-      if (!student) {
-        router.push('/results')
-        return
-      }
-
-      const studentResults = db.listResults({ studentId: student.id })
-      const subjects = db.listSubjects()
-      const classes = db.listClasses()
-      
-      const studentClass = classes.find(c => c.id === student.classId)
-      
-      // Generate mock comprehensive results
-      const enhancedResults: StudentResult[] = subjects.slice(0, 8).map((subject, index) => {
-        const ca = Math.floor(Math.random() * 25) + 5 // 5-30
-        const exam = Math.floor(Math.random() * 60) + 20 // 20-80
-        const total = ca + exam
-        const grade = getGrade(total)
-        const position = Math.floor(Math.random() * 35) + 1
-        const classAverage = Math.floor(Math.random() * 20) + 60
+      // For now, return empty data until real APIs are implemented
+      setStudent({
+        id: "1",
+        studentId: studentId,
+        name: "Student Name",
+        email: "",
+        schoolId: "1",
+        classId: "1",
+        enrollmentDate: "",
+        active: true,
+        performanceLevel: "Average" as const,
+        currentGPA: 0
+      })
+      setResults([])
+      setOverallSummary({
+        totalSubjects: 0,
+        totalScore: 0,
+        averageScore: 0,
+        grade: "N/A",
+        position: 0,
+        outOf: 0,
+        term: "Term 1",
+        session: "2024/2025"
+      })
+      setLoading(false)
+    }, 1000)
         
         return {
           id: `result_${index}`,

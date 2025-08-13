@@ -1,51 +1,69 @@
 "use client"
 
-import { useState } from "react"
-import { db } from "@/lib/mock-db"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 import { 
-  Users, 
-  GraduationCap, 
-  BookOpen, 
-  TrendingUp, 
-  Plus,
-  Eye,
-  Settings,
-  ChevronRight,
-  Award,
-  Clock,
-  Target
-} from "lucide-react"
+  Select, 
+  SelectTrigger, 
+  SelectValue, 
+  SelectContent, 
+  SelectItem 
+} from "@/components/ui/select"
+
+
+import { Label } from "@/components/ui/label"
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog"
+import { Plus, Users, BookOpen, GraduationCap, ChevronRight } from "lucide-react"
+import type { ClassRoom, School, Teacher } from "@/lib/types"
+
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 
 export default function Page() {
   const [selectedClass, setSelectedClass] = useState<string | null>(null)
   const [showCreateWizard, setShowCreateWizard] = useState(false)
-  
-  const classes = db.listClasses()
-  const teachers = db.listTeachers()
-  const subjects = db.listSubjects()
-  const students = db.listStudents()
+  const [classes, setClasses] = useState<ClassRoom[]>([])
+  const [teachers, setTeachers] = useState<Teacher[]>([])
+  const [subjects, setSubjects] = useState<any[]>([])
+  const [students, setStudents] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        // For now setting empty arrays since we need to create these API endpoints
+        setClasses([])
+        setTeachers([])
+        setSubjects([])
+        setStudents([])
+      } catch (err) {
+        console.error("Error fetching data:", err)
+        setError("Failed to load data")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   // Calculate performance metrics for each class
   const getClassMetrics = (classId: string) => {
     const classStudents = students.filter(s => s.classId === classId)
-    const results = db.listResults().filter(r => r.classId === classId)
+    const results: any[] = [] // TODO: Add results API endpoint
     
     if (results.length === 0) return { avgScore: 0, passRate: 0, trend: 0 }
     
@@ -355,8 +373,9 @@ function ClassCreationWizard({ onClose }: { onClose: () => void }) {
     capacity: 30
   })
 
-  const teachers = db.listTeachers()
-  const subjects = db.listSubjects()
+  // TODO: Replace with real API calls
+  const teachers = []
+  const subjects = []
 
   return (
     <div className="space-y-6">

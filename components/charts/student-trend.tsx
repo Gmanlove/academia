@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { db } from "@/lib/mock-db"
 import { ResultEntry } from "@/lib/types"
 import { BarChart3, TrendingUp, PieChart as PieChartIcon } from "lucide-react"
 
@@ -25,8 +24,8 @@ export function StudentTrendChart({ studentId, data }: StudentTrendChartProps) {
 
   useEffect(() => {
     if (studentId) {
-      const studentResults = db.getStudentResults(studentId)
-      setResults(studentResults || [])
+      // TODO: Replace with real API call to fetch student results
+      setResults([])
     }
   }, [studentId])
 
@@ -100,8 +99,8 @@ export function StudentTrendChart({ studentId, data }: StudentTrendChartProps) {
 
   // Prepare data for subjects chart
   const subjectData = results.reduce((acc, result) => {
-    const subject = db.getSubject(result.subjectId)
-    const subjectName = subject?.name || "Unknown"
+    // TODO: Replace with real subject lookup
+    const subjectName = "Unknown Subject"
     
     if (!acc[subjectName]) {
       acc[subjectName] = []

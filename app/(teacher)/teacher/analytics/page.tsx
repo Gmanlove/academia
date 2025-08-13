@@ -307,37 +307,6 @@ export default function TeacherAnalyticsPage() {
     }, 500)
   }, [selectedClass, selectedSubject, selectedTerm])
 
-  const handleGenerateReport = (type: string, studentId?: string) => {
-    const newReport: ReportData = {
-      id: Date.now().toString(),
-      type: type as "class" | "student" | "parent-meeting" | "recommendation",
-      title: `${type === "class" ? "Class Performance" : 
-               type === "student" ? "Student Progress" :
-               type === "parent-meeting" ? "Parent Meeting Prep" : 
-               "Performance Recommendations"} Report`,
-      description: `Generated on ${new Date().toLocaleDateString()}`,
-      generated: new Date().toISOString(),
-      status: "draft",
-      data: { type, studentId, generatedAt: new Date().toISOString() }
-    }
-    
-    setReports([newReport, ...reports])
-    setReportDialogOpen(false)
-  }
-
-  const getReportStatusBadge = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>
-      case "sent":
-        return <Badge className="bg-blue-100 text-blue-800">Sent</Badge>
-      case "draft":
-        return <Badge className="bg-yellow-100 text-yellow-800">Draft</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
-  }
-
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case "improving":

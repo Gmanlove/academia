@@ -52,7 +52,6 @@ import {
   Volume2,
   VolumeX
 } from "lucide-react"
-import { db } from "@/lib/mock-db"
 
 interface Notification {
   id: string

@@ -54,7 +54,6 @@ import {
   AlertCircle,
   Zap
 } from "lucide-react"
-import { db } from "@/lib/mock-db"
 import { Teacher, ClassRoom, Student, ResultEntry, Subject } from "@/lib/types"
 
 interface TeachingStats {
@@ -152,39 +151,25 @@ export default function TeacherDashboardPage() {
   })
 
   useEffect(() => {
-    // Simulate API calls to fetch comprehensive teacher data
+    // TODO: Replace with real API calls to fetch comprehensive teacher data
     setTimeout(() => {
-      const teachersData = db.listTeachers()
-      const teacherData = teachersData.data[0] // Get first teacher for demo
-
-      const classesData = db.listClasses()
-      const myClassesData = classesData.data.filter(c => c.teacherId === teacherData.id)
-      
-      const studentsData = db.listStudents()
-      const myStudentsData = studentsData.data.filter(s => 
-        myClassesData.some(c => c.id === s.classId)
-      )
-
-      const subjectsData = db.listSubjects() || []
-      
-      const stats = generateTeachingStats(myClassesData, myStudentsData)
-      const performances = generateClassPerformances(myClassesData, subjectsData)
-      const topPerformers = generateTopStudents(myStudentsData, myClassesData)
-      const needsAttention = generateStudentsNeedingAttention(myStudentsData, myClassesData)
-      const deadlines = generateSubmissionDeadlines(myClassesData, subjectsData)
-      const activities = generateRecentActivities(myClassesData, subjectsData)
-
-      setTeacher(teacherData)
-      setMyClasses(myClassesData)
-      setSubjects(subjectsData)
-      setTeachingStats(stats)
-      setClassPerformances(performances)
-      setTopStudents(topPerformers)
-      setStudentsNeedingAttention(needsAttention)
-      setSubmissionDeadlines(deadlines)
-      setRecentActivities(activities)
+      // For now, set empty data until real APIs are implemented
+      setTeacher(null)
+      setMyClasses([])
+      setSubjects([])
+      setTeachingStats({
+        totalClasses: 0,
+        totalStudents: 0,
+        pendingEntries: 0,
+        recentSubmissions: 0
+      })
+      setClassPerformances([])
+      setTopStudents([])
+      setStudentsNeedingAttention([])
+      setSubmissionDeadlines([])
+      setRecentActivities([])
       setLoading(false)
-    }, 1200)
+    }, 1000)
   }, [])
 
   const generateTeachingStats = (classes: ClassRoom[], students: Student[]): TeachingStats => {

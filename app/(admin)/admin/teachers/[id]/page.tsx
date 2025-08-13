@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -27,7 +27,6 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
-import { db } from "@/lib/mock-db"
 import {
   ArrowLeft,
   User,
@@ -82,12 +81,34 @@ export default function TeacherProfilePage({ params }: Props) {
   const [activeTab, setActiveTab] = useState("overview")
   const [searchClasses, setSearchClasses] = useState("")
   const [searchStudents, setSearchStudents] = useState("")
+  const [teacher, setTeacher] = useState<any>(null)
+  const [schools, setSchools] = useState<any[]>([])
+  const [classes, setClasses] = useState<any[]>([])
+  const [students, setStudents] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const teachers = db.listTeachers()
-  const teacher = teachers.find(t => t.id === params.id)
-  const schools = db.listSchools()
-  const classes = db.listClasses({})
-  const students = db.listStudents({})
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        // For now setting empty values since we need to create teacher detail API endpoints
+        setTeacher(null)
+        setSchools([])
+        setClasses([])
+        setStudents([])
+      } catch (err) {
+        console.error("Error fetching teacher data:", err)
+        setError("Failed to load teacher data")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [params.id])
 
   if (!teacher) {
     return (

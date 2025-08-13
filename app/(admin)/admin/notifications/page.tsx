@@ -72,7 +72,6 @@ import {
   Layout,
   Globe
 } from "lucide-react"
-import { db } from "@/lib/mock-db"
 import { NotificationItem, NotificationTemplate, NotificationChannel, NotificationStatus } from "@/lib/types"
 
 export default function NotificationsPage() {

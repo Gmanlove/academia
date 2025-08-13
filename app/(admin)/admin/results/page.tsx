@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { db } from "@/lib/mock-db"
+import { useState, useMemo, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -50,12 +49,36 @@ export default function Page() {
   const [selectedSession, setSelectedSession] = useState("2024/2025")
   const [selectedSubject, setSelectedSubject] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
+  const [results, setResults] = useState<any[]>([])
+  const [students, setStudents] = useState<any[]>([])
+  const [teachers, setTeachers] = useState<any[]>([])
+  const [subjects, setSubjects] = useState<any[]>([])
+  const [classes, setClasses] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const results = db.listResults()
-  const students = db.listStudents()
-  const teachers = db.listTeachers()
-  const subjects = db.listSubjects()
-  const classes = db.listClasses()
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        // For now setting empty arrays since we need to create these API endpoints
+        setResults([])
+        setStudents([])
+        setTeachers([])
+        setSubjects([])
+        setClasses([])
+      } catch (err) {
+        console.error("Error fetching data:", err)
+        setError("Failed to load data")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   // Filter results based on selections
   const filteredResults = useMemo(() => {

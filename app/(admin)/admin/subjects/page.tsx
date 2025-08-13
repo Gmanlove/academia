@@ -1,7 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { db } from "@/lib/mock-db"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -38,12 +37,36 @@ import {
 export default function Page() {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [selectedView, setSelectedView] = useState<'grid' | 'matrix'>('grid')
-  
-  const subjects = db.listSubjects()
-  const teachers = db.listTeachers()
-  const classes = db.listClasses()
-  const students = db.listStudents()
-  const results = db.listResults()
+  const [subjects, setSubjects] = useState<any[]>([])
+  const [teachers, setTeachers] = useState<any[]>([])
+  const [classes, setClasses] = useState<any[]>([])
+  const [students, setStudents] = useState<any[]>([])
+  const [results, setResults] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        // For now setting empty arrays since we need to create these API endpoints
+        setSubjects([])
+        setTeachers([])
+        setClasses([])
+        setStudents([])
+        setResults([])
+      } catch (err) {
+        console.error("Error fetching data:", err)
+        setError("Failed to load data")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   // Calculate subject analytics
   const getSubjectAnalytics = (subjectId: string) => {

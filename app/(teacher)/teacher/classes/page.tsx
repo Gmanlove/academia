@@ -61,7 +61,6 @@ import {
   Heart,
   MapPin
 } from "lucide-react"
-import { db } from "@/lib/mock-db"
 import { Teacher, ClassRoom, Student, Subject, ResultEntry } from "@/lib/types"
 
 interface ClassPerformanceData {
@@ -125,68 +124,24 @@ export default function ClassesManagementPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState<"all" | "excellent" | "good" | "needs_attention">("all")
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string>("")
 
   useEffect(() => {
-    // Simulate API calls to fetch teacher data and classes
+    // TODO: Replace with real API calls to fetch teacher data and classes
     setTimeout(() => {
-      const teachersData = db.listTeachers()
-      const teacherData = teachersData.data[0] // Get first teacher for demo
-
-      const classesData = db.listClasses()
-      const teacherClasses = classesData.data.filter(c => c.teacherId === teacherData.id)
-      
-      const studentsData = db.listStudents()
-      const subjectsData = db.listSubjects()
-
-      // Generate performance data for each class
-      const performanceData: Record<string, ClassPerformanceData> = {}
-      
-      teacherClasses.forEach(classRoom => {
-        const classStudents = studentsData.data.filter(s => s.classId === classRoom.id)
-        const classSubjects = subjectsData.data.filter(s => s.classIds?.includes(classRoom.id))
-        
-        // Generate mock performance data
-        const averageScore = Math.floor(Math.random() * 30) + 60 // 60-90
-        const passRate = Math.floor(Math.random() * 40) + 60 // 60-100%
-        
-        const subjectPerformance = classSubjects.map(subject => ({
-          id: subject.id,
-          name: subject.name,
-          average: Math.floor(Math.random() * 25) + 65, // 65-90
-          lastActivity: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
-        }))
-
-        // Top performers and students needing attention
-        const topPerformers = classStudents.slice(0, 3)
-        const needsAttention = classStudents.slice(-2)
-
-        performanceData[classRoom.id] = {
-          classId: classRoom.id,
-          className: classRoom.name,
-          totalStudents: classStudents.length,
-          averageScore,
-          passRate,
-          subjects: subjectPerformance,
-          topPerformers,
-          needsAttention,
-          lastActivity: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
-          attendance: {
-            present: Math.floor(classStudents.length * 0.85),
-            absent: Math.floor(classStudents.length * 0.15),
-            rate: 85 + Math.random() * 10 // 85-95%
-          }
-        }
-      })
-
-      setTeacher(teacherData)
-      setClasses(teacherClasses)
-      setClassPerformance(performanceData)
+      // For now, set empty data until real APIs are implemented
+      setTeacher(null)
+      setMyClasses([])
+      setPerformanceData({})
+      setAllStudents([])
+      setAllSubjects([])
       setLoading(false)
-    }, 1200)
+    }, 1000)
   }, [])
 
   const generateStudentDetailData = (student: Student): StudentDetailData => {
-    const subjects = db.listSubjects().data.slice(0, 6) // Get 6 subjects
+    // TODO: Replace with real API calls
+    const subjects = [] // Empty until real API is implemented
     
     return {
       ...student,
@@ -286,7 +241,7 @@ export default function ClassesManagementPage() {
 
   const selectedClassData = selectedClass ? classPerformance[selectedClass] : null
   const selectedClassStudents = selectedClass ? 
-    db.listStudents().data.filter(s => s.classId === selectedClass) : []
+    allStudents.filter(s => s.classId === selectedClass) : []
 
   const filteredStudents = selectedClassStudents.filter(student => {
     const matchesSearch = student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -44,7 +44,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Progress } from "@/components/ui/progress"
-import { db } from "@/lib/mock-db"
 import { Student, School, ClassRoom, PerformanceLevel } from "@/lib/types"
 import {
   Users,
@@ -92,14 +91,46 @@ export default function StudentsPage() {
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [selectedStudents, setSelectedStudents] = useState<string[]>([])
   const [showBulkActions, setShowBulkActions] = useState(false)
+  const [students, setStudents] = useState<Student[]>([])
+  const [schools, setSchools] = useState<School[]>([])
+  const [classes, setClasses] = useState<ClassRoom[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const studentsData = db.listStudents()
-  const schoolsData = db.listSchools()
-  const classesData = db.listClasses()
-  
-  const students = Array.isArray(studentsData) ? studentsData : studentsData.data || []
-  const schools = Array.isArray(schoolsData) ? schoolsData : schoolsData.data || []
-  const classes = Array.isArray(classesData) ? classesData : classesData.data || []
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        // For now using empty arrays since we need to create students API
+        const [studentsRes, schoolsRes] = await Promise.all([
+          fetch("/api/students").catch(() => ({ ok: false })),
+          fetch("/api/schools").catch(() => ({ ok: false }))
+        ])
+
+        if (studentsRes.ok) {
+          const studentsData = await studentsRes.json()
+          setStudents(studentsData.data || [])
+        }
+
+        if (schoolsRes.ok) {
+          const schoolsData = await schoolsRes.json()
+          setSchools(schoolsData.data || [])
+        }
+
+        // TODO: Add classes API endpoint
+        setClasses([])
+      } catch (err) {
+        console.error("Error fetching data:", err)
+        setError("Failed to load data")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
   
   const filteredStudents = students.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

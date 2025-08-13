@@ -58,7 +58,6 @@ import {
   ArrowDown,
   Minus
 } from "lucide-react"
-import { db } from "@/lib/mock-db"
 import { Student, ResultEntry, Subject } from "@/lib/types"
 
 interface AcademicRecord {
@@ -140,10 +139,10 @@ export default function StudentAcademicHistoryPage() {
   useEffect(() => {
     // Simulate API calls to fetch comprehensive academic data
     setTimeout(() => {
-      const students = db.listStudents()
-      const studentData = students[0]
-      const subjectsData = db.listSubjects() || []
-      const allResults = db.listResults({ studentId: studentData.id }) || []
+      // For now using empty data since we need to create student API endpoints
+      const studentData = null
+      const subjectsData: any[] = []
+      const allResults: any[] = []
       
       const records = generateAcademicRecords(allResults, subjectsData)
       const progressions = generateSubjectProgressions(allResults, subjectsData)

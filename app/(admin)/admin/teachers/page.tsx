@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { db } from "@/lib/mock-db"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -56,20 +55,43 @@ export default function TeachersPage() {
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<string>("name")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+  const [teachers, setTeachers] = useState<any[]>([])
+  const [schools, setSchools] = useState<any[]>([])
+  const [classes, setClasses] = useState<any[]>([])
+  const [subjects, setSubjects] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const teachers = db.listTeachers()
-  const schools = db.listSchools()
-  const classes = db.listClasses({})
-  const subjects = db.listSubjects({})
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        // For now setting empty arrays since we need to create these API endpoints
+        setTeachers([])
+        setSchools([])
+        setClasses([])
+        setSubjects([])
+      } catch (err) {
+        console.error("Error fetching data:", err)
+        setError("Failed to load data")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   // Get unique subjects from all teachers
-  const allSubjects = Array.from(new Set(teachers.flatMap(t => t.subjects)))
+  const allSubjects = Array.from(new Set(teachers.flatMap((t: any) => t.subjects || [])))
 
   // Enhanced teacher data with additional metrics
-  const enhancedTeachers = teachers.map(teacher => {
-    const assignedClasses = classes.filter(cls => cls.teacherId === teacher.id)
-    const school = schools.find(s => s.id === teacher.schoolId)
-    const totalStudents = assignedClasses.reduce((sum, cls) => sum + cls.studentCount, 0)
+  const enhancedTeachers = teachers.map((teacher: any) => {
+    const assignedClasses = classes.filter((cls: any) => cls.teacherId === teacher.id)
+    const school = schools.find((s: any) => s.id === teacher.schoolId)
+    const totalStudents = assignedClasses.reduce((sum: number, cls: any) => sum + cls.studentCount, 0)
     
     return {
       ...teacher,

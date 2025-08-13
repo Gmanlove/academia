@@ -49,7 +49,6 @@ import {
   Award,
   TrendingUp
 } from "lucide-react"
-import { db } from "@/lib/mock-db"
 
 interface TokenInfo {
   id: string
@@ -90,14 +89,8 @@ export default function ResultCheckerPage() {
   const router = useRouter()
 
   useEffect(() => {
-    // Load classes data
-    const classesData = db.listClasses()
-    const classInfo = classesData.map(c => ({
-      id: c.id,
-      name: c.name,
-      level: c.level.toString(),
-      studentsCount: Math.floor(Math.random() * 30) + 20 // Mock student count
-    }))
+    // Load classes data - for now using empty array since we need to create classes API
+    const classInfo: any[] = []
     setClasses(classInfo)
 
     // Check for existing session or trial count

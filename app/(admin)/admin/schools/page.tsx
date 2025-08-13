@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -27,7 +27,6 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
-import { db } from "@/lib/mock-db"
 import type { School } from "@/lib/types"
 import {
   Search,
@@ -63,7 +62,9 @@ import {
 } from "lucide-react"
 
 export default function SchoolsPage() {
-  const [schools] = useState<School[]>(db.listSchools())
+  const [schools, setSchools] = useState<School[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedBrand, setSelectedBrand] = useState<string>("all")
@@ -73,6 +74,25 @@ export default function SchoolsPage() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
   const [selectedSchools, setSelectedSchools] = useState<string[]>([])
   const [showFilters, setShowFilters] = useState(false)
+
+  useEffect(() => {
+    const fetchSchools = async () => {
+      try {
+        const response = await fetch('/api/schools')
+        if (!response.ok) {
+          throw new Error('Failed to fetch schools')
+        }
+        const data = await response.json()
+        setSchools(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSchools()
+  }, [])
 
   const brands = ["Acme", "Contoso", "Globex"]
   const studentCountRanges = [
@@ -395,6 +415,29 @@ export default function SchoolsPage() {
       </TableCell>
     </TableRow>
   )
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading schools...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="h-16 w-16 text-red-500 mx-auto mb-4">⚠️</div>
+          <p className="text-red-600 font-medium">Error loading schools</p>
+          <p className="text-muted-foreground">{error}</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
