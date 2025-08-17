@@ -7,6 +7,7 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Academia - School Management System',
   description: 'Comprehensive school management system for administrators, teachers, and students',
+    generator: 'v0.app'
 }
 
 export default function RootLayout({

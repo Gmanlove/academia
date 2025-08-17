@@ -1,1360 +1,1017 @@
-'use client';
+"use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  ChevronRight, 
-  CheckCircle, 
-  Star, 
-  Users, 
-  Award, 
-  BarChart3, 
-  Shield, 
-  Smartphone,
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input"
+import {
+  Menu,
+  X,
+  GraduationCap,
+  Users,
   BookOpen,
-  Clock,
-  TrendingUp,
-  Zap,
-  Target,
-  Heart,
-  Phone,
-  Mail,
+  BarChart3,
+  Shield,
+  Smartphone,
+  Globe,
+  CheckCircle,
+  Star,
   ArrowRight,
   Play,
-  Download,
-  Globe,
-  Layers,
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  Award,
+  Heart,
+  TrendingUp,
+  Headphones,
   FileText,
-  Settings,
-  PieChart,
-  MessageSquare,
-  Lock,
   Calendar,
-  UserCheck,
-  GraduationCap,
-  Building2,
-  School,
-  Lightbulb,
-  Rocket,
-  Quote,
-  Search
-} from 'lucide-react';
+  Bell,
+  Settings,
+  ChevronDown,
+  ChevronRight,
+  CreditCard,
+  Banknote,
+} from "lucide-react"
 
-export default function HomePage() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [activeFeature, setActiveFeature] = useState(0);
+export default function LandingPage() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [activePortal, setActivePortal] = useState("admin")
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+      const header = document.getElementById("header")
+      if (header) {
+        if (window.scrollY > 100) {
+          header.classList.add("backdrop-blur-md", "bg-white/80", "border-b")
+        } else {
+          header.classList.remove("backdrop-blur-md", "bg-white/80", "border-b")
+        }
+      }
+    }
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveFeature((prev) => (prev + 1) % 4);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
-  const features = [
-    { icon: Target, title: "Admin Dashboard", desc: "Complete oversight with analytics", color: "text-blue-600 bg-blue-50" },
-    { icon: GraduationCap, title: "Teacher Portal", desc: "Streamlined score entry & management", color: "text-purple-600 bg-purple-50" },
-    { icon: Users, title: "Student/Parent Portal", desc: "Real-time access to academic progress", color: "text-green-600 bg-green-50" },
-    { icon: Shield, title: "Public Result Checker", desc: "Secure, token-based result access", color: "text-amber-600 bg-amber-50" }
-  ];
+  const portalFeatures = {
+    admin: {
+      title: "Admin Portal",
+      description: "Complete school management with powerful analytics and control",
+      features: [
+        "Student & Teacher Management",
+        "Academic Performance Analytics",
+        "Financial Management & Reporting",
+        "Communication & Notifications",
+        "System Configuration & Settings",
+        "Multi-School Management",
+      ],
+      color: "bg-blue-500",
+    },
+    teacher: {
+      title: "Teacher Portal",
+      description: "Streamlined teaching tools for modern educators",
+      features: [
+        "Grade & Assessment Management",
+        "Class Performance Analytics",
+        "Student Progress Tracking",
+        "Assignment & Homework Tools",
+        "Parent Communication",
+        "Lesson Planning & Resources",
+      ],
+      color: "bg-green-500",
+    },
+    student: {
+      title: "Student Portal",
+      description: "Engaging learning experience with comprehensive tools",
+      features: [
+        "Academic Results & Transcripts",
+        "Assignment Submissions",
+        "Class Schedule & Timetable",
+        "Communication with Teachers",
+        "Learning Resources & Materials",
+        "Progress Tracking & Goals",
+      ],
+      color: "bg-purple-500",
+    },
+    public: {
+      title: "Public Portal",
+      description: "Transparent access to academic information for everyone",
+      features: [
+        "Result Verification System",
+        "School Information & News",
+        "Admission Requirements",
+        "Contact Information",
+        "Academic Calendar",
+        "Public Announcements",
+      ],
+      color: "bg-orange-500",
+    },
+  }
+
+  const testimonials = [
+    {
+      name: "Mrs. Adunni Olatunji",
+      role: "Principal, Lagos State Model College",
+      content:
+        "Academia has transformed how we manage our school. The comprehensive analytics help us make data-driven decisions, and our teachers love the intuitive interface.",
+      rating: 5,
+      image: "/placeholder-user.jpg",
+    },
+    {
+      name: "Mr. Chukwuma Nwosu",
+      role: "Mathematics Teacher, Federal Government College",
+      content:
+        "The grade management system is incredibly efficient. I can track student progress in real-time and communicate with parents seamlessly.",
+      rating: 5,
+      image: "/placeholder-user.jpg",
+    },
+    {
+      name: "Fatima Al-Hassan",
+      role: "Student, Government Secondary School",
+      content:
+        "I love being able to check my results instantly and communicate with my teachers. The mobile app makes everything so convenient!",
+      rating: 5,
+      image: "/placeholder-user.jpg",
+    },
+  ]
+
+  const faqs = [
+    {
+      question: "How secure is Academia's data management?",
+      answer:
+        "Academia employs enterprise-grade security with end-to-end encryption, regular security audits, and compliance with international data protection standards. All data is stored securely with multiple backup systems.",
+    },
+    {
+      question: "Can Academia handle multiple schools?",
+      answer:
+        "Yes! Academia is designed for scalability. Our Enterprise plan supports unlimited schools with centralized management, while maintaining individual school autonomy and customization.",
+    },
+    {
+      question: "What payment methods do you accept in Nigeria?",
+      answer:
+        "We accept all major Nigerian payment methods including bank transfers, Paystack, Flutterwave, USSD payments, and mobile money. We also offer flexible payment plans for schools.",
+    },
+    {
+      question: "Do you provide training and support?",
+      answer:
+        "We provide comprehensive onboarding, training sessions for staff, 24/7 technical support, and ongoing educational resources to ensure successful implementation.",
+    },
+    {
+      question: "Can parents access their children's information?",
+      answer:
+        "Yes, parents receive secure login credentials to access their children's academic records, communicate with teachers, receive notifications, and track progress through our parent portal.",
+    },
+    {
+      question: "Is there a mobile app available?",
+      answer:
+        "Yes! Academia offers native mobile apps for iOS and Android, providing full functionality for students, teachers, parents, and administrators on the go.",
+    },
+    {
+      question: "How does the result verification system work?",
+      answer:
+        "Our public result verification system allows anyone to verify academic results using unique verification codes, ensuring transparency and preventing certificate fraud.",
+    },
+    {
+      question: "What happens to our data if we cancel?",
+      answer:
+        "You maintain full ownership of your data. We provide complete data export in standard formats and ensure secure data deletion according to your preferences and legal requirements.",
+    },
+  ]
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Enhanced Navigation */}
-      <nav className={`fixed w-full z-50 transition-all duration-500 ${
-        isScrolled ? 'bg-white/95 backdrop-blur-lg shadow-xl border-b border-gray-100' : 'bg-white shadow-lg'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-20">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                  <GraduationCap className="h-6 w-6 text-white" />
-                </div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  Academia
-                </h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Header */}
+      <header id="header" className="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                <GraduationCap className="h-6 w-6 text-white" />
               </div>
-              <div className="hidden lg:block ml-10">
-                <div className="flex space-x-8">
-                  <a href="#features" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Features</a>
-                  <a href="#pricing" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Pricing</a>
-                  <a href="#demo" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Demo</a>
-                  <a href="#testimonials" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Reviews</a>
-                  <a href="#contact" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Contact</a>
-                </div>
-              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Academia
+              </span>
             </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold">
-                <Link href="/results" className="flex items-center space-x-2">
-                  <Search className="w-4 h-4" />
-                  <span>Check Results</span>
-                </Link>
-              </Button>
-              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg font-semibold">
-                <Link href="/auth" className="flex items-center space-x-2">
-                  <Rocket className="w-4 h-4" />
-                  <span>Sign In</span>
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
 
-      {/* Enhanced Hero Section */}
-      <section className="relative bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 pt-32 pb-20 overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-          <div className="absolute top-40 right-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{animationDelay: '2s'}}></div>
-          <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{animationDelay: '4s'}}></div>
-        </div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-              {/* Trust Badge */}
-              <Badge className="bg-green-100 text-green-800 border-green-200 px-4 py-2 text-sm font-semibold">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Trusted by 500+ Schools Nationwide
-              </Badge>
-              
-              <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
-                <span className="bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
-                  Transform Your School
-                </span>
-                <br />
-                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  Operations Today
-                </span>
-              </h1>
-              <p className="text-xl text-gray-700 leading-relaxed max-w-xl">
-                The most comprehensive school management platform designed specifically for Nigerian schools. 
-                Streamline operations, boost academic performance, and engage parents like never before.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button className="bg-yellow-400 text-blue-900 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-yellow-300 transition duration-300 transform hover:scale-105">
-                  <Link href="#demo">🚀 Try Demo</Link>
-                </Button>
-                <Button variant="outline" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-700 transition duration-300">
-                  <a href="/results">� Check Results</a>
-                </Button>
-              </div>
-              <div className="flex items-center space-x-8 text-sm">
-                <div className="flex items-center space-x-2">
-                  <span className="text-yellow-400">✓</span>
-                  <span>Free up to 20 students</span>
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-8">
+              <a href="#features" className="text-gray-700 hover:text-blue-600 transition-colors">
+                Features
+              </a>
+              <a href="#pricing" className="text-gray-700 hover:text-blue-600 transition-colors">
+                Pricing
+              </a>
+              <a href="#demo" className="text-gray-700 hover:text-blue-600 transition-colors">
+                Demo
+              </a>
+              <a href="#contact" className="text-gray-700 hover:text-blue-600 transition-colors">
+                Contact
+              </a>
+              <Link href="/auth">
+                <Button variant="outline">Login</Button>
+              </Link>
+              <Link href="/auth/register">
+                <Button>Get Started</Button>
+              </Link>
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
+
+          {/* Mobile Navigation */}
+          {isMenuOpen && (
+            <div className="md:hidden mt-4 p-4 bg-white rounded-lg shadow-lg border">
+              <nav className="flex flex-col space-y-4">
+                <a href="#features" className="text-gray-700 hover:text-blue-600 transition-colors">
+                  Features
+                </a>
+                <a href="#pricing" className="text-gray-700 hover:text-blue-600 transition-colors">
+                  Pricing
+                </a>
+                <a href="#demo" className="text-gray-700 hover:text-blue-600 transition-colors">
+                  Demo
+                </a>
+                <a href="#contact" className="text-gray-700 hover:text-blue-600 transition-colors">
+                  Contact
+                </a>
+                <div className="flex flex-col space-y-2 pt-4 border-t">
+                  <Link href="/auth">
+                    <Button variant="outline" className="w-full bg-transparent">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link href="/auth/register">
+                    <Button className="w-full">Get Started</Button>
+                  </Link>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-yellow-400">✓</span>
-                  <span>No setup fees</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-yellow-400">✓</span>
-                  <span>Cancel anytime</span>
-                </div>
-              </div>
+              </nav>
             </div>
-            <div className="relative">
-              <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-                <CardContent className="p-8">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-green-400 rounded-full flex items-center justify-center">
-                          <span className="text-white font-bold">👨‍🎓</span>
-                        </div>
-                        <div>
-                          <div className="text-white font-semibold">Total Students</div>
-                          <div className="text-green-300">+12% this term</div>
-                        </div>
-                      </div>
-                      <div className="text-2xl font-bold text-white">1,247</div>
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center">
-                          <span className="text-white font-bold">👨‍🏫</span>
-                        </div>
-                        <div>
-                          <div className="text-white font-semibold">Active Teachers</div>
-                          <div className="text-blue-300">All online</div>
-                        </div>
-                      </div>
-                      <div className="text-2xl font-bold text-white">47</div>
-                    </div>
-                    <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-purple-400 rounded-full flex items-center justify-center">
-                          <span className="text-white font-bold">📊</span>
-                        </div>
-                        <div>
-                          <div className="text-white font-semibold">Results Posted</div>
-                          <div className="text-purple-300">This week</div>
-                        </div>
-                      </div>
-                      <div className="text-2xl font-bold text-white">892</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          )}
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="pt-24 pb-16 px-4">
+        <div className="container mx-auto text-center">
+          <div className="max-w-4xl mx-auto">
+            <Badge className="mb-6 bg-blue-100 text-blue-800 hover:bg-blue-200">
+              🚀 Trusted by 500+ Nigerian Schools
+            </Badge>
+
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent leading-tight">
+              The Complete School Management Solution for Nigeria
+            </h1>
+
+            <p className="text-xl md:text-2xl text-gray-600 mb-8 leading-relaxed">
+              Streamline academic operations, enhance student performance, and empower educational excellence with our
+              comprehensive, Nigerian-focused school management platform.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Link href="/auth/register">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg px-8 py-4"
+                >
+                  Start Free Trial
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Button size="lg" variant="outline" className="text-lg px-8 py-4 bg-transparent">
+                <Play className="mr-2 h-5 w-5" />
+                Watch Demo
+              </Button>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              <div>
+                <div className="text-3xl font-bold text-blue-600">500+</div>
+                <div className="text-gray-600">Schools</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-green-600">50K+</div>
+                <div className="text-gray-600">Students</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-purple-600">2K+</div>
+                <div className="text-gray-600">Teachers</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-orange-600">99.9%</div>
+                <div className="text-gray-600">Uptime</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Professional Trust & Stats Section */}
-      <section className="py-16 bg-white border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Trust Indicators */}
-          <div className="text-center mb-16">
-            <p className="text-gray-600 mb-8">Trusted by leading educational institutions across Nigeria</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center opacity-60">
-              <div className="text-center">
-                <div className="h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-2">
-                  <Building2 className="h-6 w-6 text-gray-400" />
-                </div>
-                <p className="text-sm text-gray-500">Premium Schools</p>
-              </div>
-              <div className="text-center">
-                <div className="h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-2">
-                  <School className="h-6 w-6 text-gray-400" />
-                </div>
-                <p className="text-sm text-gray-500">Public Schools</p>
-              </div>
-              <div className="text-center">
-                <div className="h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-2">
-                  <GraduationCap className="h-6 w-6 text-gray-400" />
-                </div>
-                <p className="text-sm text-gray-500">Universities</p>
-              </div>
-              <div className="text-center">
-                <div className="h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-2">
-                  <BookOpen className="h-6 w-6 text-gray-400" />
-                </div>
-                <p className="text-sm text-gray-500">Academies</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Key Stats */}
-          <div className="grid md:grid-cols-4 gap-8">
-            <Card className="text-center p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardContent className="pt-6">
-                <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Users className="h-8 w-8 text-blue-600" />
-                </div>
-                <div className="text-3xl font-bold text-blue-600 mb-2">10,000+</div>
-                <p className="text-gray-600 font-medium">Students Managed</p>
-                <p className="text-sm text-gray-500 mt-1">Across 500+ schools</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardContent className="pt-6">
-                <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Clock className="h-8 w-8 text-green-600" />
-                </div>
-                <div className="text-3xl font-bold text-green-600 mb-2">20+</div>
-                <p className="text-gray-600 font-medium">Hours Saved Weekly</p>
-                <p className="text-sm text-gray-500 mt-1">Per school administrator</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center p-6 bg-gradient-to-br from-purple-50 to-violet-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardContent className="pt-6">
-                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <TrendingUp className="h-8 w-8 text-purple-600" />
-                </div>
-                <div className="text-3xl font-bold text-purple-600 mb-2">15%</div>
-                <p className="text-gray-600 font-medium">Performance Boost</p>
-                <p className="text-sm text-gray-500 mt-1">Average improvement</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center p-6 bg-gradient-to-br from-amber-50 to-orange-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardContent className="pt-6">
-                <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Heart className="h-8 w-8 text-amber-600" />
-                </div>
-                <div className="text-3xl font-bold text-amber-600 mb-2">95%</div>
-                <p className="text-gray-600 font-medium">Parent Satisfaction</p>
-                <p className="text-sm text-gray-500 mt-1">Real-time engagement</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Complete School Management Ecosystem</h2>
+      {/* Portal Showcase */}
+      <section className="py-16 px-4 bg-white">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">Four Powerful Portals, One Complete Solution</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Four powerful portals designed for every stakeholder in your school community
+              Academia provides specialized interfaces for every stakeholder in your educational ecosystem
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-8 mb-16">
-            {/* Admin Dashboard */}
-            <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-              <CardHeader>
-                <div className="text-4xl mb-4">🎯</div>
-                <CardTitle className="text-xl">Admin Dashboard</CardTitle>
-                <CardDescription>
-                  Complete oversight with analytics, student management, and system controls.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>School & Multi-school Management</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Student & Teacher Management</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Advanced Analytics & Reports</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Bulk Operations & CSV Import</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Notification Management</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>System Health Monitoring</span>
-                  </li>
-                </ul>
-                <div className="mt-4">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                    <Link href="/admin/dashboard">Access Admin Portal</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          <Tabs value={activePortal} onValueChange={setActivePortal} className="w-full">
+            <TabsList className="grid w-full grid-cols-4 mb-8">
+              <TabsTrigger value="admin" className="text-sm">
+                Admin
+              </TabsTrigger>
+              <TabsTrigger value="teacher" className="text-sm">
+                Teacher
+              </TabsTrigger>
+              <TabsTrigger value="student" className="text-sm">
+                Student
+              </TabsTrigger>
+              <TabsTrigger value="public" className="text-sm">
+                Public
+              </TabsTrigger>
+            </TabsList>
 
-            {/* Teacher Portal */}
-            <Card className="bg-gradient-to-br from-purple-50 to-violet-100 hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-              <CardHeader>
-                <div className="text-4xl mb-4">👨‍🏫</div>
-                <CardTitle className="text-xl">Teacher Portal</CardTitle>
-                <CardDescription>
-                  Streamlined score entry, class management, and communication tools.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Quick Score Entry & Auto-calculation</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Class Performance Analytics</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Student Progress Tracking</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Parent Communication Tools</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Automated Grade Calculations</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Report Generation</span>
-                  </li>
-                </ul>
-                <div className="mt-4">
-                  <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
-                    <Link href="/teacher/dashboard">Access Teacher Portal</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {Object.entries(portalFeatures).map(([key, portal]) => (
+              <TabsContent key={key} value={key}>
+                <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50">
+                  <CardHeader className="text-center pb-8">
+                    <div
+                      className={`w-16 h-16 ${portal.color} rounded-full flex items-center justify-center mx-auto mb-4`}
+                    >
+                      {key === "admin" && <Settings className="h-8 w-8 text-white" />}
+                      {key === "teacher" && <Users className="h-8 w-8 text-white" />}
+                      {key === "student" && <GraduationCap className="h-8 w-8 text-white" />}
+                      {key === "public" && <Globe className="h-8 w-8 text-white" />}
+                    </div>
+                    <CardTitle className="text-3xl mb-2">{portal.title}</CardTitle>
+                    <CardDescription className="text-lg">{portal.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-8 items-center">
+                      <div>
+                        <h4 className="text-xl font-semibold mb-4">Key Features:</h4>
+                        <ul className="space-y-3">
+                          {portal.features.map((feature, index) => (
+                            <li key={index} className="flex items-center">
+                              <CheckCircle className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="bg-gray-100 rounded-lg p-8 text-center">
+                        <div className="text-6xl mb-4">
+                          {key === "admin" && "📊"}
+                          {key === "teacher" && "👩‍🏫"}
+                          {key === "student" && "🎓"}
+                          {key === "public" && "🌐"}
+                        </div>
+                        <p className="text-gray-600">Interactive portal preview coming soon</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
+      </section>
 
-            {/* Student/Parent Portal */}
-            <Card className="bg-gradient-to-br from-green-50 to-emerald-100 hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-              <CardHeader>
-                <div className="text-4xl mb-4">🎓</div>
-                <CardTitle className="text-xl">Student/Parent Portal</CardTitle>
-                <CardDescription>
-                  Real-time access to academic progress and performance insights.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Real-time Results Access</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Performance Analytics & Trends</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Downloadable Transcripts</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Notification Center</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Academic History & Goals</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Parent Engagement Tools</span>
-                  </li>
-                </ul>
-                <div className="mt-4">
-                  <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
-                    <Link href="/student/dashboard">Access Student Portal</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Public Result Checker */}
-            <Card className="bg-gradient-to-br from-amber-50 to-orange-100 hover:shadow-xl transition duration-300 transform hover:-translate-y-2">
-              <CardHeader>
-                <div className="text-4xl mb-4">🔍</div>
-                <CardTitle className="text-xl">Public Result Checker</CardTitle>
-                <CardDescription>
-                  Secure, token-based result checking for external access.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Token-based Security</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Limited Trial Access</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>PDF Download & Print</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Watermarked Results</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Session Management</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <span className="text-green-500">✓</span>
-                    <span>Help & Support</span>
-                  </li>
-                </ul>
-                <div className="mt-4">
-                  <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white">
-                    <Link href="/results">Check Results</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+      {/* Core Features */}
+      <section id="features" className="py-16 px-4 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">Comprehensive School Management Features</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Everything you need to run a modern educational institution efficiently
+            </p>
           </div>
 
-          {/* Key Features Grid */}
-          <div className="mb-16">
-            <h3 className="text-3xl font-bold text-gray-900 mb-8 text-center">Core Platform Features</h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl">📊</div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">Advanced Analytics</h4>
-                  <p className="text-sm text-gray-600">Performance trends, comparative analysis, and predictive insights</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl">📱</div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">Multi-channel Notifications</h4>
-                  <p className="text-sm text-gray-600">Email, SMS, and in-app notifications with automation</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl">📁</div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">Bulk Operations</h4>
-                  <p className="text-sm text-gray-600">Import/export students, bulk score entry, mass communications</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl">🔒</div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">Role-based Security</h4>
-                  <p className="text-sm text-gray-600">Granular permissions and secure data access controls</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl">🏫</div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">Multi-school Support</h4>
-                  <p className="text-sm text-gray-600">Manage multiple schools under one centralized system</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl">📝</div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">Custom Grading</h4>
-                  <p className="text-sm text-gray-600">Flexible grading systems and automated calculations</p>
-                </div>
-              </div>
-            </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                icon: <Users className="h-8 w-8" />,
+                title: "Student Management",
+                description:
+                  "Complete student lifecycle management from admission to graduation with detailed profiles, academic tracking, and parent communication.",
+                color: "bg-blue-500",
+              },
+              {
+                icon: <BarChart3 className="h-8 w-8" />,
+                title: "Academic Analytics",
+                description:
+                  "Powerful analytics and reporting tools to track performance, identify trends, and make data-driven educational decisions.",
+                color: "bg-green-500",
+              },
+              {
+                icon: <BookOpen className="h-8 w-8" />,
+                title: "Curriculum Management",
+                description:
+                  "Organize subjects, create lesson plans, manage assessments, and track curriculum delivery across all classes.",
+                color: "bg-purple-500",
+              },
+              {
+                icon: <Bell className="h-8 w-8" />,
+                title: "Communication Hub",
+                description:
+                  "Multi-channel communication system for announcements, notifications, parent-teacher interactions, and emergency alerts.",
+                color: "bg-orange-500",
+              },
+              {
+                icon: <Shield className="h-8 w-8" />,
+                title: "Security & Privacy",
+                description:
+                  "Enterprise-grade security with role-based access control, data encryption, and compliance with educational privacy standards.",
+                color: "bg-red-500",
+              },
+              {
+                icon: <Smartphone className="h-8 w-8" />,
+                title: "Mobile Access",
+                description:
+                  "Native mobile apps for iOS and Android ensuring full functionality for all users on any device, anywhere.",
+                color: "bg-indigo-500",
+              },
+            ].map((feature, index) => (
+              <Card
+                key={index}
+                className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                <CardHeader>
+                  <div
+                    className={`w-12 h-12 ${feature.color} rounded-lg flex items-center justify-center text-white mb-4`}
+                  >
+                    {feature.icon}
+                  </div>
+                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">{feature.description}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Key Benefits Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Schools Choose Academia</h2>
-            <p className="text-xl text-gray-600">Join hundreds of schools already transforming their operations across Nigeria</p>
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-12 mb-16">
-            <div className="text-center">
-              <div className="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl">⚡</span>
+      {/* Benefits Section */}
+      <section className="py-16 px-4 bg-white">
+        <div className="container mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="text-4xl font-bold mb-6">Why Schools Choose Academia</h2>
+              <div className="space-y-6">
+                {[
+                  {
+                    icon: <TrendingUp className="h-6 w-6 text-green-500" />,
+                    title: "Improve Academic Performance by 35%",
+                    description:
+                      "Data-driven insights help identify struggling students early and implement targeted interventions.",
+                  },
+                  {
+                    icon: <Clock className="h-6 w-6 text-blue-500" />,
+                    title: "Save 20+ Hours Weekly",
+                    description:
+                      "Automated administrative tasks free up valuable time for teaching and student interaction.",
+                  },
+                  {
+                    icon: <Heart className="h-6 w-6 text-red-500" />,
+                    title: "Increase Parent Satisfaction by 90%",
+                    description: "Real-time communication and transparency build stronger school-parent relationships.",
+                  },
+                  {
+                    icon: <Award className="h-6 w-6 text-purple-500" />,
+                    title: "Achieve 99.9% Data Accuracy",
+                    description:
+                      "Eliminate manual errors with automated data validation and real-time synchronization.",
+                  },
+                ].map((benefit, index) => (
+                  <div key={index} className="flex items-start space-x-4">
+                    <div className="flex-shrink-0 mt-1">{benefit.icon}</div>
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">{benefit.title}</h3>
+                      <p className="text-gray-600">{benefit.description}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Save 20+ Hours Weekly</h3>
-              <p className="text-gray-600">Automate result compilation, grade calculations, notifications, and administrative tasks that used to take hours.</p>
             </div>
-
-            <div className="text-center">
-              <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl">📈</span>
+            <div className="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl p-8">
+              <div className="text-center">
+                <div className="text-6xl mb-6">📈</div>
+                <h3 className="text-2xl font-bold mb-4">Proven Results</h3>
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div className="bg-white rounded-lg p-4">
+                    <div className="text-2xl font-bold text-green-600">35%</div>
+                    <div className="text-sm text-gray-600">Performance Boost</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4">
+                    <div className="text-2xl font-bold text-blue-600">20hrs</div>
+                    <div className="text-sm text-gray-600">Time Saved Weekly</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4">
+                    <div className="text-2xl font-bold text-purple-600">90%</div>
+                    <div className="text-sm text-gray-600">Parent Satisfaction</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4">
+                    <div className="text-2xl font-bold text-orange-600">99.9%</div>
+                    <div className="text-sm text-gray-600">Data Accuracy</div>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Boost Academic Performance</h3>
-              <p className="text-gray-600">Data-driven insights help identify struggling students early, track improvement trends, and optimize teaching strategies.</p>
             </div>
-
-            <div className="text-center">
-              <div className="bg-purple-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl">🤝</span>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Improve Parent Engagement</h3>
-              <p className="text-gray-600">Real-time result access, automated notifications, and transparent communication keep parents actively involved in their child's education.</p>
-            </div>
-          </div>
-
-          {/* Additional Benefits */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="text-center p-6">
-              <CardContent className="pt-6">
-                <div className="text-3xl mb-3">💰</div>
-                <h4 className="font-semibold text-gray-900 mb-2">Cost Effective</h4>
-                <p className="text-sm text-gray-600">Starts at just ₦300 per student per term</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center p-6">
-              <CardContent className="pt-6">
-                <div className="text-3xl mb-3">🔒</div>
-                <h4 className="font-semibold text-gray-900 mb-2">Bank-level Security</h4>
-                <p className="text-sm text-gray-600">SSL encryption and secure data storage</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center p-6">
-              <CardContent className="pt-6">
-                <div className="text-3xl mb-3">📱</div>
-                <h4 className="font-semibold text-gray-900 mb-2">Mobile Responsive</h4>
-                <p className="text-sm text-gray-600">Works perfectly on all devices</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center p-6">
-              <CardContent className="pt-6">
-                <div className="text-3xl mb-3">🇳🇬</div>
-                <h4 className="font-semibold text-gray-900 mb-2">Built for Nigeria</h4>
-                <p className="text-sm text-gray-600">Nigerian payment methods & curriculum</p>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-xl text-gray-600">Start free, scale as you grow. No hidden fees, no surprises.</p>
-            <div className="mt-4">
-              <Badge variant="outline" className="text-green-600 border-green-600">
-                💳 Nigerian Payment Methods Supported
+      <section id="pricing" className="py-16 px-4 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Choose the perfect plan for your school. All plans include core features with no hidden fees.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              {
+                name: "Starter",
+                price: "Free",
+                period: "Forever",
+                description: "Perfect for small schools getting started",
+                features: [
+                  "Up to 50 students",
+                  "Basic result management",
+                  "Parent communication",
+                  "Mobile app access",
+                  "Email support",
+                ],
+                cta: "Start Free",
+                popular: false,
+                color: "border-gray-200",
+              },
+              {
+                name: "School",
+                price: "₦25,000",
+                period: "per month",
+                description: "Ideal for growing educational institutions",
+                features: [
+                  "Up to 500 students",
+                  "Advanced analytics",
+                  "Multi-class management",
+                  "Custom reports",
+                  "Priority support",
+                  "Teacher training",
+                ],
+                cta: "Start Trial",
+                popular: true,
+                color: "border-blue-500",
+              },
+              {
+                name: "Professional",
+                price: "₦50,000",
+                period: "per month",
+                description: "For established schools with advanced needs",
+                features: [
+                  "Up to 2,000 students",
+                  "Financial management",
+                  "Advanced security",
+                  "API access",
+                  "Custom integrations",
+                  "24/7 phone support",
+                  "On-site training",
+                ],
+                cta: "Contact Sales",
+                popular: false,
+                color: "border-purple-500",
+              },
+              {
+                name: "Enterprise",
+                price: "Custom",
+                period: "pricing",
+                description: "For large institutions and school districts",
+                features: [
+                  "Unlimited students",
+                  "Multi-school management",
+                  "White-label solution",
+                  "Dedicated support team",
+                  "Custom development",
+                  "SLA guarantee",
+                  "Advanced compliance",
+                ],
+                cta: "Contact Us",
+                popular: false,
+                color: "border-green-500",
+              },
+            ].map((plan, index) => (
+              <Card
+                key={index}
+                className={`relative border-2 ${plan.color} ${plan.popular ? "shadow-xl scale-105" : "shadow-lg"} hover:shadow-xl transition-all duration-300`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-blue-500 text-white">Most Popular</Badge>
+                  </div>
+                )}
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                  <div className="mt-4">
+                    <span className="text-4xl font-bold">{plan.price}</span>
+                    {plan.period !== "pricing" && <span className="text-gray-600">/{plan.period}</span>}
+                  </div>
+                  <CardDescription className="mt-2">{plan.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3 mb-6">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-green-500 mr-3 flex-shrink-0" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button className={`w-full ${plan.popular ? "bg-blue-500 hover:bg-blue-600" : ""}`}>
+                    {plan.cta}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-gray-600 mb-4">All plans include:</p>
+            <div className="flex flex-wrap justify-center gap-4 text-sm">
+              <Badge variant="outline" className="flex items-center">
+                <Banknote className="h-4 w-4 mr-1" />
+                Nigerian Payment Methods
+              </Badge>
+              <Badge variant="outline" className="flex items-center">
+                <CreditCard className="h-4 w-4 mr-1" />
+                Flexible Payment Plans
+              </Badge>
+              <Badge variant="outline" className="flex items-center">
+                <Headphones className="h-4 w-4 mr-1" />
+                Local Support Team
+              </Badge>
+              <Badge variant="outline" className="flex items-center">
+                <Shield className="h-4 w-4 mr-1" />
+                Data Security Guarantee
               </Badge>
             </div>
           </div>
-
-          <div className="grid lg:grid-cols-4 gap-8">
-            {/* Free Plan */}
-            <Card className="relative border-2 border-gray-200 hover:border-gray-300 transition duration-300">
-              <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl font-bold text-gray-900">Free</CardTitle>
-                <div className="text-4xl font-bold text-gray-900 my-4">₦0</div>
-                <CardDescription>Perfect for small schools & trials</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Up to 20 students</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">1 teacher account</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Basic result management</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Student/parent portal</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-red-500 font-bold">✗</span>
-                    <span className="text-gray-500">Analytics & notifications</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-red-500 font-bold">✗</span>
-                    <span className="text-gray-500">Bulk import/export</span>
-                  </li>
-                </ul>
-                <Button className="w-full bg-gray-200 text-gray-800 hover:bg-gray-300">
-                  Get Started Free
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Basic Plan */}
-            <Card className="relative border-2 border-blue-200 hover:border-blue-300 transition duration-300">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-blue-500 text-white">Most Popular</Badge>
-              </div>
-              <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl font-bold text-gray-900">Basic</CardTitle>
-                <div className="text-4xl font-bold text-blue-600 my-4">₦300</div>
-                <CardDescription>per student/term</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Unlimited students</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Up to 5 teachers</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Full result management</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Email notifications</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Import/export tools</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Basic analytics</span>
-                  </li>
-                </ul>
-                <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                  Start Basic Plan
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Pro Plan */}
-            <Card className="relative border-2 border-purple-200 hover:border-purple-300 transition duration-300">
-              <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl font-bold text-gray-900">Pro</CardTitle>
-                <div className="text-4xl font-bold text-purple-600 my-4">₦600</div>
-                <CardDescription>per student/term</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Everything in Basic</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Up to 20 teachers</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Advanced analytics</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">SMS + Email notifications</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Performance predictions</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Priority support</span>
-                  </li>
-                </ul>
-                <Button className="w-full bg-purple-600 hover:bg-purple-700">
-                  Start Pro Plan
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Enterprise Plan */}
-            <Card className="relative border-2 border-amber-200 hover:border-amber-300 transition duration-300">
-              <CardHeader className="text-center pb-8">
-                <CardTitle className="text-2xl font-bold text-gray-900">Enterprise</CardTitle>
-                <div className="text-4xl font-bold text-amber-600 my-4">Custom</div>
-                <CardDescription>For school networks</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Everything in Pro</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Multi-school management</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">API access & integrations</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Custom branding</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Dedicated support</span>
-                  </li>
-                  <li className="flex items-center space-x-3">
-                    <span className="text-green-500 font-bold">✓</span>
-                    <span className="text-gray-700">Training & onboarding</span>
-                  </li>
-                </ul>
-                <Button className="w-full bg-amber-600 hover:bg-amber-700">
-                  Contact Sales
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Pricing Information */}
-          <div className="text-center mt-12">
-            <Card className="max-w-4xl mx-auto bg-gray-50">
-              <CardContent className="p-8">
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-3">💳 Payment Options</h4>
-                    <p className="text-sm text-gray-600 mb-3">
-                      Cards • Bank Transfer • USSD • Mobile Wallets
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Powered by Paystack & Flutterwave
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-3">📊 Billing Options</h4>
-                    <p className="text-sm text-gray-600 mb-3">
-                      Pay per term or annually (with discounts)
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Free setup • No cancellation fees • 24/7 support
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <p className="text-sm text-gray-600">
-                    <strong>Example:</strong> A school with 150 students on Basic Plan = ₦300 × 150 = ₦45,000/term
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </section>
 
-      {/* Demo & Login Section */}
-      <section id="demo" className="py-20 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Demo Section */}
+      <section id="demo" className="py-16 px-4 bg-white">
+        <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Try Academia Today</h2>
-            <p className="text-xl text-indigo-100 mb-8 max-w-3xl mx-auto">
-              Experience our platform with live demo accounts or check your results instantly.
-            </p>
-          </div>
-          
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Live Demo Access */}
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl text-white">🚀 Live Demo Access</CardTitle>
-                <CardDescription className="text-indigo-100">
-                  Test all features with sample data
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-3">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white justify-start h-12">
-                    <Link href="/admin/dashboard" className="flex items-center w-full">
-                      <span className="text-2xl mr-3">🎯</span>
-                      <div className="text-left">
-                        <div className="font-semibold">Admin Dashboard</div>
-                        <div className="text-xs opacity-80">Full system oversight</div>
-                      </div>
-                    </Link>
-                  </Button>
-                  
-                  <Button className="bg-purple-600 hover:bg-purple-700 text-white justify-start h-12">
-                    <Link href="/teacher/dashboard" className="flex items-center w-full">
-                      <span className="text-2xl mr-3">👨‍🏫</span>
-                      <div className="text-left">
-                        <div className="font-semibold">Teacher Portal</div>
-                        <div className="text-xs opacity-80">Score entry & analytics</div>
-                      </div>
-                    </Link>
-                  </Button>
-                  
-                  <Button className="bg-green-600 hover:bg-green-700 text-white justify-start h-12">
-                    <Link href="/student/dashboard" className="flex items-center w-full">
-                      <span className="text-2xl mr-3">🎓</span>
-                      <div className="text-left">
-                        <div className="font-semibold">Student Portal</div>
-                        <div className="text-xs opacity-80">Progress tracking</div>
-                      </div>
-                    </Link>
-                  </Button>
-                </div>
-                
-                <div className="bg-white/10 p-4 rounded-lg mt-6">
-                  <h4 className="font-semibold mb-2">Demo Features Include:</h4>
-                  <ul className="text-sm text-indigo-100 space-y-1">
-                    <li>• Sample student data (100+ records)</li>
-                    <li>• Complete grade management</li>
-                    <li>• Analytics & reporting tools</li>
-                    <li>• Notification system</li>
-                    <li>• Multi-school management</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Result Access */}
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl text-white">� Check Your Results</CardTitle>
-                <CardDescription className="text-indigo-100">
-                  Instant access to academic results
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Button className="bg-amber-600 hover:bg-amber-700 text-white w-full h-16 text-lg">
-                  <Link href="/results" className="flex items-center justify-center w-full">
-                    <span className="text-3xl mr-3">📊</span>
-                    <div>
-                      <div className="font-semibold">Access Results Portal</div>
-                      <div className="text-sm opacity-80">Enter your token to view results</div>
-                    </div>
-                  </Link>
-                </Button>
-                
-                <div className="bg-white/10 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-3">How to Check Results:</h4>
-                  <div className="space-y-2 text-sm text-indigo-100">
-                    <div className="flex items-center">
-                      <span className="bg-amber-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 text-xs font-bold">1</span>
-                      Get your result token from your school
-                    </div>
-                    <div className="flex items-center">
-                      <span className="bg-amber-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 text-xs font-bold">2</span>
-                      Enter your student ID and token
-                    </div>
-                    <div className="flex items-center">
-                      <span className="bg-amber-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-3 text-xs font-bold">3</span>
-                      View and download your results
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-amber-500/20 border border-amber-400/30 p-3 rounded-lg">
-                  <p className="text-sm text-amber-100">
-                    <strong>Demo Token:</strong> Use "DEMO2024" with any student ID to try the result checker.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="text-center mt-12">
-            <p className="text-indigo-200 mb-4">Need help or want a personalized demo?</p>
-            <div className="flex justify-center gap-4">
-              <Button variant="outline" className="border-2 border-white text-white px-6 py-3 hover:bg-white hover:text-indigo-600 transition duration-300">
-                � Contact Sales
-              </Button>
-              <Button variant="outline" className="border-2 border-white text-white px-6 py-3 hover:bg-white hover:text-indigo-600 transition duration-300">
-                � View Documentation
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Modern Feature Showcase */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge className="bg-blue-100 text-blue-800 border-blue-200 px-4 py-2 mb-6">
-              <Zap className="w-4 h-4 mr-2" />
-              Powerful Features
-            </Badge>
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Everything Your School Needs
-              <br />
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                In One Platform
-              </span>
-            </h2>
+            <h2 className="text-4xl font-bold mb-4">Experience Academia Live</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              From student management to parent engagement, Academia provides all the tools you need to run a modern, efficient school.
+              Try our demo portals and see how Academia can transform your school management
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <Card className="relative group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <BarChart3 className="h-8 w-8 text-blue-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Smart Analytics</h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Get deep insights into student performance, class trends, and school-wide analytics with automated reporting and predictive insights.
-                </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center">
-                    <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                    Real-time performance tracking
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                    Automated report generation
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                    Predictive performance insights
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Feature 2 */}
-            <Card className="relative group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-pink-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <MessageSquare className="h-8 w-8 text-purple-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Parent Engagement</h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Keep parents informed and engaged with automated notifications, real-time result access, and direct communication channels.
-                </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center">
-                    <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                    SMS & Email notifications
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                    Instant result delivery
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                    Two-way communication
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Feature 3 */}
-            <Card className="relative group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-600 to-teal-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-teal-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Shield className="h-8 w-8 text-green-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Secure & Reliable</h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Bank-level security with SSL encryption, automated backups, and 99.9% uptime guarantee. Your data is always safe and accessible.
-                </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center">
-                    <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                    SSL encryption & secure storage
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                    Daily automated backups
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                    99.9% uptime guarantee
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {[
+              {
+                name: "Admin Demo",
+                href: "/admin/dashboard",
+                icon: <Settings className="h-6 w-6" />,
+                color: "bg-blue-500",
+              },
+              {
+                name: "Teacher Demo",
+                href: "/teacher/dashboard",
+                icon: <Users className="h-6 w-6" />,
+                color: "bg-green-500",
+              },
+              {
+                name: "Student Demo",
+                href: "/student/dashboard",
+                icon: <GraduationCap className="h-6 w-6" />,
+                color: "bg-purple-500",
+              },
+              {
+                name: "Result Checker",
+                href: "/results",
+                icon: <FileText className="h-6 w-6" />,
+                color: "bg-orange-500",
+              },
+            ].map((demo, index) => (
+              <Link key={index} href={demo.href}>
+                <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+                  <CardContent className="p-6 text-center">
+                    <div
+                      className={`w-12 h-12 ${demo.color} rounded-lg flex items-center justify-center text-white mx-auto mb-4`}
+                    >
+                      {demo.icon}
+                    </div>
+                    <h3 className="font-semibold mb-2">{demo.name}</h3>
+                    <Button variant="outline" size="sm">
+                      Try Now
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
           </div>
+
+          {/* Result Checker Preview */}
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center">
+                <FileText className="h-6 w-6 mr-2" />
+                Quick Result Verification
+              </CardTitle>
+              <CardDescription>
+                Verify any academic result instantly with our public verification system
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4">
+                <Input placeholder="Enter verification code (e.g., ACA/2024/001)" className="flex-1" />
+                <Button>
+                  Verify Result
+                  <CheckCircle className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600 mt-2 text-center">Try: ACA/2024/001 for a sample result</p>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">What Schools Are Saying</h2>
-            <p className="text-xl text-gray-600">Join hundreds of satisfied schools across Nigeria</p>
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-8">
-            <Card className="p-8">
-              <CardContent>
-                <div className="flex items-center mb-4">
-                  <div className="flex space-x-1">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} className="text-yellow-400">⭐</span>
-                    ))}
-                  </div>
-                </div>
-                <p className="text-gray-700 mb-6 italic">
-                  "Academia transformed our school operations completely. What used to take our admin team 2 days now takes 30 minutes. Parents love the instant result access!"
-                </p>
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 font-bold">MO</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">Mrs. Olumide Adebayo</div>
-                    <div className="text-gray-600 text-sm">Principal, Greenfield Academy Lagos</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="p-8">
-              <CardContent>
-                <div className="flex items-center mb-4">
-                  <div className="flex space-x-1">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} className="text-yellow-400">⭐</span>
-                    ))}
-                  </div>
-                </div>
-                <p className="text-gray-700 mb-6 italic">
-                  "The analytics features helped us identify students who needed extra support early. Our overall performance improved by 15% this term!"
-                </p>
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <span className="text-green-600 font-bold">AK</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">Mr. Adebayo Kola</div>
-                    <div className="text-gray-600 text-sm">Academic Director, Excellence Schools Abuja</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="p-8">
-              <CardContent>
-                <div className="flex items-center mb-4">
-                  <div className="flex space-x-1">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} className="text-yellow-400">⭐</span>
-                    ))}
-                  </div>
-                </div>
-                <p className="text-gray-700 mb-6 italic">
-                  "As a teacher, I love how simple score entry has become. The automatic calculations and parent notifications save me hours every week."
-                </p>
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                    <span className="text-purple-600 font-bold">FN</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">Miss Funmi Nkem</div>
-                    <div className="text-gray-600 text-sm">Mathematics Teacher, Royal Heights School</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Success Stories */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Success Stories</h2>
-            <p className="text-xl text-gray-600">Real results from real schools using Academia</p>
+      {/* Testimonials */}
+      <section className="py-16 px-4 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">What Our Users Say</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Join hundreds of satisfied schools across Nigeria</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="text-center p-8 bg-blue-50">
-              <CardContent>
-                <div className="text-4xl font-bold text-blue-600 mb-2">10,000+</div>
-                <div className="text-lg font-semibold text-gray-900 mb-2">Students Managed</div>
-                <p className="text-gray-600">Across 500+ schools nationwide</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center p-8 bg-green-50">
-              <CardContent>
-                <div className="text-4xl font-bold text-green-600 mb-2">95%</div>
-                <div className="text-lg font-semibold text-gray-900 mb-2">Parent Satisfaction</div>
-                <p className="text-gray-600">Real-time access increases engagement</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center p-8 bg-purple-50">
-              <CardContent>
-                <div className="text-4xl font-bold text-purple-600 mb-2">20+</div>
-                <div className="text-lg font-semibold text-gray-900 mb-2">Hours Saved Weekly</div>
-                <p className="text-gray-600">Administrative time reduction</p>
-              </CardContent>
-            </Card>
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center mb-4">
+                    {Array.from({ length: testimonial.rating }).map((_, i) => (
+                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+                  <p className="text-gray-600 mb-6 italic">"{testimonial.content}"</p>
+                  <div className="flex items-center">
+                    <img
+                      src={testimonial.image || "/placeholder.svg"}
+                      alt={testimonial.name}
+                      className="w-12 h-12 rounded-full mr-4"
+                    />
+                    <div>
+                      <div className="font-semibold">{testimonial.name}</div>
+                      <div className="text-sm text-gray-600">{testimonial.role}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-            <p className="text-xl text-gray-600">Everything you need to know about Academia</p>
+      <section className="py-16 px-4 bg-white">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">Frequently Asked Questions</h2>
+            <p className="text-xl text-gray-600">Get answers to common questions about Academia</p>
           </div>
 
-          <div className="space-y-6">
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">How quickly can we get started?</h3>
-                <p className="text-gray-600">You can start immediately with our free plan for up to 20 students. For larger schools, setup typically takes 1-2 days including data import and staff training.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Can we import existing student data?</h3>
-                <p className="text-gray-600">Yes! We support bulk import from Excel and CSV files. Our team can help with data migration from your current system at no extra cost.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">What payment methods do you accept?</h3>
-                <p className="text-gray-600">We accept all major payment methods in Nigeria including bank cards, bank transfers, USSD, and mobile wallet payments through Paystack and Flutterwave.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my school data secure?</h3>
-                <p className="text-gray-600">Absolutely. We use bank-level security with SSL encryption, regular backups, and secure data centers. Your data is never shared with third parties.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Do you offer training for our staff?</h3>
-                <p className="text-gray-600">Yes! All plans include comprehensive training materials and video guides. Pro and Enterprise plans include live training sessions with our team.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Can parents access results on mobile phones?</h3>
-                <p className="text-gray-600">Yes! Our platform is fully mobile-responsive. We also have dedicated mobile apps coming soon for iOS and Android.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">What happens if I need to cancel?</h3>
-                <p className="text-gray-600">You can cancel anytime with no fees. Your data remains accessible during the current billing period, and we provide export options for your records.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Do you support multiple schools under one account?</h3>
-                <p className="text-gray-600">Yes! Our Enterprise plan includes multi-school management with centralized analytics and administration. Perfect for school networks and educational groups.</p>
-              </CardContent>
-            </Card>
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <Card key={index} className="border">
+                <CardContent className="p-0">
+                  <button
+                    className="w-full p-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                  >
+                    <span className="font-semibold">{faq.question}</span>
+                    {openFaq === index ? (
+                      <ChevronDown className="h-5 w-5 text-gray-500" />
+                    ) : (
+                      <ChevronRight className="h-5 w-5 text-gray-500" />
+                    )}
+                  </button>
+                  {openFaq === index && (
+                    <div className="px-6 pb-6">
+                      <p className="text-gray-600">{faq.answer}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+      {/* Final CTA */}
+      <section className="py-16 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+        <div className="container mx-auto text-center">
           <h2 className="text-4xl font-bold mb-4">Ready to Transform Your School?</h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Join hundreds of schools already using Academia to streamline operations and boost academic performance.
+          <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+            Join over 500 Nigerian schools already using Academia to improve their educational outcomes
           </p>
-          
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 mb-8">
-            <CardContent className="p-8">
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold mb-2">10,000+</div>
-                  <p className="text-blue-100">Students Managed</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold mb-2">500+</div>
-                  <p className="text-blue-100">Schools Using Academia</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold mb-2">99.9%</div>
-                  <p className="text-blue-100">Uptime Guarantee</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-            <Button className="bg-yellow-400 text-blue-900 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-yellow-300 transition duration-300 transform hover:scale-105">
-              🚀 Start Free Trial Now
-            </Button>
-            <Button variant="outline" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-600 transition duration-300">
-              📞 Contact Sales Team
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            <div>
+              <div className="text-3xl font-bold">30-Day</div>
+              <div className="opacity-90">Free Trial</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold">24/7</div>
+              <div className="opacity-90">Support</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold">99.9%</div>
+              <div className="opacity-90">Uptime SLA</div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/auth/register">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-4">
+                Start Your Free Trial
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-4 bg-transparent"
+            >
+              Schedule Demo
+              <Calendar className="ml-2 h-5 w-5" />
             </Button>
           </div>
-          
-          <p className="text-sm text-blue-200">
-            No credit card required • Free for up to 20 students • Cancel anytime
-          </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="bg-gray-900 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-2">
-              <h3 className="text-2xl font-bold mb-4">🎓 Academia</h3>
-              <p className="text-gray-300 mb-6 max-w-md">
-                The complete school management system designed specifically for Nigerian schools. Streamline operations, boost performance, and engage parents like never before.
+      <footer id="contact" className="bg-gray-900 text-white py-16 px-4">
+        <div className="container mx-auto">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <GraduationCap className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-2xl font-bold">Academia</span>
+              </div>
+              <p className="text-gray-400 mb-4">
+                Empowering Nigerian schools with comprehensive management solutions for the digital age.
               </p>
               <div className="flex space-x-4">
-                <Button className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition duration-300">
-                  📘
-                </Button>
-                <Button className="bg-blue-400 text-white p-3 rounded-lg hover:bg-blue-500 transition duration-300">
-                  🐦
-                </Button>
-                <Button className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition duration-300">
-                  💬
-                </Button>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                  </svg>
+                </a>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z" />
+                  </svg>
+                </a>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                  </svg>
+                </a>
               </div>
             </div>
 
             <div>
-              <h4 className="text-lg font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-gray-300">
-                <li><a href="#features" className="hover:text-white transition duration-300">Features</a></li>
-                <li><a href="#pricing" className="hover:text-white transition duration-300">Pricing</a></li>
-                <li><a href="#demo" className="hover:text-white transition duration-300">Demo</a></li>
-                <li><a href="#" className="hover:text-white transition duration-300">API Documentation</a></li>
-                <li><a href="#" className="hover:text-white transition duration-300">Mobile Apps</a></li>
+              <h3 className="text-lg font-semibold mb-4">Product</h3>
+              <ul className="space-y-2">
+                <li>
+                  <a href="#features" className="text-gray-400 hover:text-white transition-colors">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#pricing" className="text-gray-400 hover:text-white transition-colors">
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="#demo" className="text-gray-400 hover:text-white transition-colors">
+                    Demo
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    API Documentation
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    Integrations
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-lg font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-gray-300">
-                <li><a href="#" className="hover:text-white transition duration-300">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition duration-300">Training Videos</a></li>
-                <li><a href="#" className="hover:text-white transition duration-300">Contact Support</a></li>
-                <li><a href="#" className="hover:text-white transition duration-300">System Status</a></li>
+              <h3 className="text-lg font-semibold mb-4">Support</h3>
+              <ul className="space-y-2">
                 <li>
-                  <div className="flex items-center space-x-2">
-                    <span>📞</span>
-                    <span>+234 (0) 812-345-6789</span>
-                  </div>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    Help Center
+                  </a>
                 </li>
                 <li>
-                  <div className="flex items-center space-x-2">
-                    <span>✉️</span>
-                    <span>support@academia.com</span>
-                  </div>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    Training Resources
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    System Status
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    Contact Support
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    Community Forum
+                  </a>
                 </li>
               </ul>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Contact Info</h3>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <Mail className="h-5 w-5 mr-3 text-gray-400" />
+                  <span className="text-gray-400">info@academia.edu.ng</span>
+                </div>
+                <div className="flex items-center">
+                  <Phone className="h-5 w-5 mr-3 text-gray-400" />
+                  <span className="text-gray-400">+234-701-ACADEMIA</span>
+                </div>
+                <div className="flex items-center">
+                  <MapPin className="h-5 w-5 mr-3 text-gray-400" />
+                  <span className="text-gray-400">Lagos, Nigeria</span>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <h4 className="text-sm font-semibold mb-2">Newsletter</h4>
+                <div className="flex">
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                  />
+                  <Button className="ml-2 bg-blue-600 hover:bg-blue-700">Subscribe</Button>
+                </div>
+              </div>
             </div>
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-gray-400 text-sm">
-                © 2025 Academia. All rights reserved. Made with ❤️ for Nigerian schools.
-              </p>
-              <div className="flex space-x-6 text-sm text-gray-400 mt-4 md:mt-0">
-                <a href="#" className="hover:text-white transition duration-300">Privacy Policy</a>
-                <a href="#" className="hover:text-white transition duration-300">Terms of Service</a>
-                <a href="#" className="hover:text-white transition duration-300">Data Security</a>
+              <div className="text-gray-400 text-sm">© 2024 Academia. All rights reserved.</div>
+              <div className="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+                  Privacy Policy
+                </a>
+                <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+                  Terms of Service
+                </a>
+                <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
+                  Cookie Policy
+                </a>
               </div>
             </div>
           </div>
         </div>
       </footer>
     </div>
-  );
+  )
 }
