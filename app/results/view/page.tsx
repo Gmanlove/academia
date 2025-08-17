@@ -1,21 +1,13 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   Dialog,
   DialogContent,
@@ -29,39 +21,26 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
-  User,
-  Calendar,
-  School,
   Trophy,
   TrendingUp,
   TrendingDown,
-  Award,
   Star,
-  Clock,
   Download,
   Printer,
   Share2,
-  Mail,
   Shield,
   Eye,
   LogOut,
   Timer,
   FileText,
-  CheckCircle,
   AlertTriangle,
   Info,
   Lock,
   Send,
-  Copy,
-  ExternalLink,
   BarChart3,
   Target,
   BookOpen,
   Users,
-  GraduationCap,
-  Zap,
-  Heart,
-  MapPin
 } from "lucide-react"
 
 interface StudentResult {
@@ -97,11 +76,11 @@ interface StudentInfo {
   nextTerm: string
 }
 
-export default function ResultViewPage() {
+function ResultViewContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const printRef = useRef<HTMLDivElement>(null)
-  
+
   const [studentInfo, setStudentInfo] = useState<StudentInfo | null>(null)
   const [results, setResults] = useState<StudentResult[]>([])
   const [loading, setLoading] = useState(true)
@@ -114,96 +93,90 @@ export default function ResultViewPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(true)
 
   useEffect(() => {
-    const studentId = searchParams.get('studentId')
+    const studentId = searchParams.get("studentId")
     if (!studentId) {
-      router.push('/results')
+      router.push("/results")
       return
     }
 
     // Simulate authentication check
-    const authCheck = localStorage.getItem('result-auth-time')
+    const authCheck = localStorage.getItem("result-auth-time")
     const currentTime = Date.now()
-    
-    if (!authCheck || currentTime - parseInt(authCheck) > 15 * 60 * 1000) {
+
+    if (!authCheck || currentTime - Number.parseInt(authCheck) > 15 * 60 * 1000) {
       setIsAuthenticated(false)
-      router.push('/results')
+      router.push("/results")
       return
     }
 
-    // Load student data (TODO: Replace with real API calls)
+    // Load student data
     setTimeout(() => {
-      // For now, return empty data until real APIs are implemented
-      setStudent({
+      const mockStudentInfo: StudentInfo = {
         id: "1",
+        name: "John Doe",
         studentId: studentId,
-        name: "Student Name",
-        email: "",
-        schoolId: "1",
-        classId: "1",
-        enrollmentDate: "",
-        active: true,
-        performanceLevel: "Average" as const,
-        currentGPA: 0
-      })
-      setResults([])
-      setOverallSummary({
-        totalSubjects: 0,
-        totalScore: 0,
-        averageScore: 0,
-        grade: "N/A",
-        position: 0,
-        outOf: 0,
-        term: "Term 1",
-        session: "2024/2025"
-      })
-      setLoading(false)
-    }, 1000)
-        
-        return {
-          id: `result_${index}`,
-          subjectId: subject.id,
-          subjectName: subject.name,
-          ca,
-          exam,
-          total,
-          grade,
-          teacherRemark: generateTeacherRemark(total),
-          position,
-          classAverage
-        }
-      })
-
-      const overallAverage = enhancedResults.reduce((sum, r) => sum + r.total, 0) / enhancedResults.length
-      const gpa = calculateGPA(enhancedResults)
-      const classPosition = Math.floor(Math.random() * 40) + 1
-      
-      const studentData: StudentInfo = {
-        id: student.id,
-        name: student.name,
-        studentId: student.studentId,
-        className: studentClass?.name || "Not Assigned",
-        classLevel: studentClass?.level.toString() || "N/A",
-        photoUrl: student.photoUrl,
-        dateOfBirth: student.dateOfBirth || "N/A",
-        parentName: student.parentName || "N/A",
-        parentEmail: student.parentEmail || "N/A",
-        enrollmentDate: student.enrollmentDate,
-        overallAverage: Math.round(overallAverage * 100) / 100,
-        gpa: Math.round(gpa * 100) / 100,
+        className: "JSS 2A",
+        classLevel: "JSS 2",
+        photoUrl: "/placeholder-user.jpg",
+        dateOfBirth: "2008-05-15",
+        parentName: "Mr. & Mrs. Doe",
+        parentEmail: "parent@example.com",
+        enrollmentDate: "2023-09-01",
+        overallAverage: 78.5,
+        gpa: 3.2,
         totalStudents: 45,
-        classPosition,
+        classPosition: 12,
         term: "Second Term",
         academicYear: "2024/2025",
-        nextTerm: "September 15, 2025"
+        nextTerm: "September 15, 2025",
       }
 
-      setStudentInfo(studentData)
-      setResults(enhancedResults)
+      const mockResults: StudentResult[] = [
+        {
+          id: "1",
+          subjectId: "math",
+          subjectName: "Mathematics",
+          ca: 25,
+          exam: 58,
+          total: 83,
+          grade: "A",
+          teacherRemark: "Excellent performance! Keep up the great work.",
+          position: 3,
+          classAverage: 72,
+        },
+        {
+          id: "2",
+          subjectId: "eng",
+          subjectName: "English Language",
+          ca: 22,
+          exam: 52,
+          total: 74,
+          grade: "B",
+          teacherRemark: "Good work! Continue to strive for excellence.",
+          position: 8,
+          classAverage: 68,
+        },
+        {
+          id: "3",
+          subjectId: "sci",
+          subjectName: "Basic Science",
+          ca: 20,
+          exam: 55,
+          total: 75,
+          grade: "B",
+          teacherRemark: "Good understanding of concepts.",
+          position: 7,
+          classAverage: 70,
+        },
+      ]
+
+      setStudentInfo(mockStudentInfo)
+      setResults(mockResults)
       setLoading(false)
 
       // Store access attempt
-      const attempts = parseInt(localStorage.getItem('result-access-attempts') || '0') + 1
-      localStorage.setItem('result-access-attempts', attempts.toString())
+      const attempts = Number.parseInt(localStorage.getItem("result-access-attempts") || "0") + 1
+      localStorage.setItem("result-access-attempts", attempts.toString())
       setAccessAttempts(attempts)
     }, 1000)
   }, [searchParams, router])
@@ -213,7 +186,7 @@ export default function ResultViewPage() {
     if (!isAuthenticated) return
 
     const timer = setInterval(() => {
-      setSessionTimeLeft(prev => {
+      setSessionTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
           handleSessionExpired()
@@ -238,17 +211,27 @@ export default function ResultViewPage() {
   const getGradeColor = (grade: string): string => {
     switch (grade) {
       case "A+":
-      case "A": return "text-green-600 bg-green-100"
-      case "B": return "text-blue-600 bg-blue-100"
-      case "C": return "text-yellow-600 bg-yellow-100"
-      case "D": return "text-orange-600 bg-orange-100"
-      default: return "text-red-600 bg-red-100"
+      case "A":
+        return "text-green-600 bg-green-100"
+      case "B":
+        return "text-blue-600 bg-blue-100"
+      case "C":
+        return "text-yellow-600 bg-yellow-100"
+      case "D":
+        return "text-orange-600 bg-orange-100"
+      default:
+        return "text-red-600 bg-red-100"
     }
   }
 
   const calculateGPA = (results: StudentResult[]): number => {
     const gradePoints: { [key: string]: number } = {
-      "A+": 4.0, "A": 4.0, "B": 3.0, "C": 2.0, "D": 1.0, "F": 0.0
+      "A+": 4.0,
+      A: 4.0,
+      B: 3.0,
+      C: 2.0,
+      D: 1.0,
+      F: 0.0,
     }
     const totalPoints = results.reduce((sum, r) => sum + (gradePoints[r.grade] || 0), 0)
     return totalPoints / results.length
@@ -263,9 +246,9 @@ export default function ResultViewPage() {
   }
 
   const handleSessionExpired = () => {
-    localStorage.removeItem('result-auth-time')
-    localStorage.removeItem('result-access-attempts')
-    router.push('/results')
+    localStorage.removeItem("result-auth-time")
+    localStorage.removeItem("result-access-attempts")
+    router.push("/results")
   }
 
   const handlePrint = () => {
@@ -275,17 +258,17 @@ export default function ResultViewPage() {
   const handleDownload = () => {
     setDownloadDialogOpen(false)
     // Simulate PDF generation
-    const link = document.createElement('a')
-    link.href = '#'
+    const link = document.createElement("a")
+    link.href = "#"
     link.download = `${studentInfo?.studentId}_results_${studentInfo?.term}.pdf`
     link.click()
   }
 
   const handleShare = () => {
     if (!shareEmail) return
-    
+
     // Simulate email sharing
-    console.log('Sharing results to:', shareEmail, 'Message:', shareMessage)
+    console.log("Sharing results to:", shareEmail, "Message:", shareMessage)
     setShareDialogOpen(false)
     setShareEmail("")
     setShareMessage("")
@@ -294,7 +277,7 @@ export default function ResultViewPage() {
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = seconds % 60
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
   }
 
   const getPerformanceIcon = (total: number) => {
@@ -323,7 +306,7 @@ export default function ResultViewPage() {
             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Student Not Found</h2>
             <p className="text-gray-600 mb-4">The requested student information could not be located.</p>
-            <Button onClick={() => router.push('/results')}>
+            <Button onClick={() => router.push("/results")}>
               <LogOut className="mr-2 h-4 w-4" />
               Return to Login
             </Button>
@@ -351,9 +334,7 @@ export default function ResultViewPage() {
             </div>
             <div className="flex items-center gap-2">
               <Eye className="h-4 w-4 text-blue-500" />
-              <span className="text-sm text-gray-600">
-                Access #{accessAttempts} | View Only
-              </span>
+              <span className="text-sm text-gray-600">Access #{accessAttempts} | View Only</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -371,9 +352,7 @@ export default function ResultViewPage() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Download Results</DialogTitle>
-                  <DialogDescription>
-                    Generate a watermarked PDF copy of the academic results
-                  </DialogDescription>
+                  <DialogDescription>Generate a watermarked PDF copy of the academic results</DialogDescription>
                 </DialogHeader>
                 <Alert>
                   <Info className="h-4 w-4" />
@@ -402,9 +381,7 @@ export default function ResultViewPage() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Share Results</DialogTitle>
-                  <DialogDescription>
-                    Send a secure link to view these results (Limited sharing)
-                  </DialogDescription>
+                  <DialogDescription>Send a secure link to view these results (Limited sharing)</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
@@ -445,7 +422,7 @@ export default function ResultViewPage() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-            <Button variant="outline" size="sm" onClick={() => router.push('/results')}>
+            <Button variant="outline" size="sm" onClick={() => router.push("/results")}>
               <LogOut className="mr-2 h-4 w-4" />
               Exit
             </Button>
@@ -466,7 +443,9 @@ export default function ResultViewPage() {
           {/* Header */}
           <div className="print:hidden text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">📋 Academic Results</h1>
-            <p className="text-lg text-gray-600">{studentInfo.term} - {studentInfo.academicYear}</p>
+            <p className="text-lg text-gray-600">
+              {studentInfo.term} - {studentInfo.academicYear}
+            </p>
           </div>
 
           {/* Student Information Header */}
@@ -477,12 +456,17 @@ export default function ResultViewPage() {
                   <Avatar className="h-16 w-16 border-4 border-white print:border-gray-300">
                     <AvatarImage src="/placeholder-user.jpg" />
                     <AvatarFallback className="text-xl bg-white text-blue-600">
-                      {studentInfo.name.split(' ').map(n => n[0]).join('')}
+                      {studentInfo.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <h2 className="text-2xl font-bold">{studentInfo.name}</h2>
-                    <p className="text-blue-100 print:text-gray-600">{studentInfo.studentId} • {studentInfo.className}</p>
+                    <p className="text-blue-100 print:text-gray-600">
+                      {studentInfo.studentId} • {studentInfo.className}
+                    </p>
                   </div>
                 </div>
               </CardTitle>
@@ -524,21 +508,25 @@ export default function ResultViewPage() {
             <Card className="print:border print:border-gray-300">
               <CardContent className="p-4 text-center">
                 <Trophy className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-gray-900">{results.filter(r => r.grade.includes('A')).length}</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {results.filter((r) => r.grade.includes("A")).length}
+                </div>
                 <div className="text-sm text-gray-600">A Grades</div>
               </CardContent>
             </Card>
             <Card className="print:border print:border-gray-300">
               <CardContent className="p-4 text-center">
                 <Target className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-gray-900">{results.filter(r => r.total >= 70).length}</div>
+                <div className="text-2xl font-bold text-gray-900">{results.filter((r) => r.total >= 70).length}</div>
                 <div className="text-sm text-gray-600">Above 70%</div>
               </CardContent>
             </Card>
             <Card className="print:border print:border-gray-300">
               <CardContent className="p-4 text-center">
                 <BarChart3 className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-gray-900">{Math.round((results.filter(r => r.total >= 60).length / results.length) * 100)}%</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {Math.round((results.filter((r) => r.total >= 60).length / results.length) * 100)}%
+                </div>
                 <div className="text-sm text-gray-600">Pass Rate</div>
               </CardContent>
             </Card>
@@ -589,7 +577,7 @@ export default function ResultViewPage() {
                         <div className="flex items-center gap-2">
                           {getPerformanceIcon(result.total)}
                           <span className="text-sm text-gray-600">
-                            {result.total >= result.classAverage ? 'Above Average' : 'Below Average'}
+                            {result.total >= result.classAverage ? "Above Average" : "Below Average"}
                           </span>
                         </div>
                       </TableCell>
@@ -618,24 +606,21 @@ export default function ResultViewPage() {
                         {result.total}% ({result.grade})
                       </Badge>
                     </div>
-                    <p className="text-gray-700 text-sm italic print:text-black">
-                      "{result.teacherRemark}"
-                    </p>
+                    <p className="text-gray-700 text-sm italic print:text-black">"{result.teacherRemark}"</p>
                   </div>
                 ))}
-                
+
                 {/* Overall Class Teacher Remark */}
                 <div className="p-4 bg-blue-50 border-l-4 border-blue-500 print:bg-gray-100 print:border-gray-400">
                   <h4 className="font-semibold text-blue-900 print:text-black mb-2">Class Teacher's Overall Comment</h4>
                   <p className="text-blue-800 print:text-black">
-                    {studentInfo.overallAverage >= 80 
+                    {studentInfo.overallAverage >= 80
                       ? `${studentInfo.name} has shown exceptional performance this term with an outstanding average of ${studentInfo.overallAverage}%. Continue the excellent work and maintain this high standard.`
                       : studentInfo.overallAverage >= 70
-                      ? `${studentInfo.name} has demonstrated good academic progress with an average of ${studentInfo.overallAverage}%. With more focus and effort, even better results can be achieved.`
-                      : studentInfo.overallAverage >= 60
-                      ? `${studentInfo.name} has achieved a fair performance with ${studentInfo.overallAverage}% average. There is significant room for improvement. Please focus on weak areas and seek additional support where needed.`
-                      : `${studentInfo.name}'s performance requires immediate attention with an average of ${studentInfo.overallAverage}%. Parent-teacher consultation is recommended to develop an improvement plan.`
-                    }
+                        ? `${studentInfo.name} has demonstrated good academic progress with an average of ${studentInfo.overallAverage}%. With more focus and effort, even better results can be achieved.`
+                        : studentInfo.overallAverage >= 60
+                          ? `${studentInfo.name} has achieved a fair performance with ${studentInfo.overallAverage}% average. There is significant room for improvement. Please focus on weak areas and seek additional support where needed.`
+                          : `${studentInfo.name}'s performance requires immediate attention with an average of ${studentInfo.overallAverage}%. Parent-teacher consultation is recommended to develop an improvement plan.`}
                   </p>
                   <div className="mt-3 pt-3 border-t border-blue-200 print:border-gray-400">
                     <div className="flex justify-between items-center text-sm">
@@ -654,7 +639,8 @@ export default function ResultViewPage() {
               Generated on: {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}
             </div>
             <div className="text-xs text-gray-500 print:text-gray-700">
-              Document ID: {studentInfo.studentId}-{Date.now()} | Access Level: Student/Parent View | Session: #{accessAttempts}
+              Document ID: {studentInfo.studentId}-{Date.now()} | Access Level: Student/Parent View | Session: #
+              {accessAttempts}
             </div>
             <div className="text-xs text-gray-500 print:text-gray-700">
               This document is authenticated and watermarked for security. Any unauthorized reproduction is prohibited.
@@ -663,5 +649,23 @@ export default function ResultViewPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ResultViewPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-lg font-medium text-gray-700">Loading your results...</p>
+            <p className="text-sm text-gray-500">Please wait while we fetch your academic information</p>
+          </div>
+        </div>
+      }
+    >
+      <ResultViewContent />
+    </Suspense>
   )
 }
