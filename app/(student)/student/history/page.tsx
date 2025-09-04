@@ -179,7 +179,7 @@ export default function StudentAcademicHistoryPage() {
         term,
         results: termResults,
         gpa: Math.round(gpa * 100) / 100,
-        position: Math.floor(Math.random() * 5) + 1, // Mock position
+        position: 1, // Default position - should be fetched from API
         totalStudents: 30,
         achievements: generateAchievementsForTerm(year, term, gpa)
       }

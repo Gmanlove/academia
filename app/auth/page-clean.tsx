@@ -8,7 +8,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { 
   GraduationCap,
   User,
@@ -16,9 +22,11 @@ import {
   Eye,
   EyeOff,
   Shield,
+  School,
   Users,
   BookOpen,
   CheckCircle,
+  Mail,
   LogIn,
   UserPlus
 } from "lucide-react"
@@ -36,6 +44,7 @@ interface RegisterFormData {
   confirmPassword: string
   name: string
   role: string
+  schoolId?: string
 }
 
 export default function AuthPage() {
@@ -50,7 +59,8 @@ export default function AuthPage() {
     password: "",
     confirmPassword: "",
     name: "",
-    role: ""
+    role: "",
+    schoolId: ""
   })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -61,12 +71,16 @@ export default function AuthPage() {
   const searchParams = useSearchParams()
   const { signIn, signUp } = useSupabaseAuth()
 
+  // Handle verification success parameter
   useEffect(() => {
     const verified = searchParams.get('verified')
     if (verified === 'true') {
       setSuccess("Email verified successfully! You can now log in to your account.")
       setActiveTab("login")
-      setTimeout(() => setSuccess(""), 5000)
+      
+      setTimeout(() => {
+        setSuccess("")
+      }, 5000)
     }
   }, [searchParams])
 
@@ -87,6 +101,7 @@ export default function AuthPage() {
       if (success) {
         setSuccess("Login successful! Redirecting...")
         
+        // Redirect based on role
         setTimeout(() => {
           switch (loginData.role) {
             case 'admin':
@@ -136,7 +151,8 @@ export default function AuthPage() {
     try {
       const success = await signUp(registerData.email, registerData.password, {
         role: registerData.role as 'admin' | 'teacher' | 'student' | 'parent',
-        name: registerData.name
+        name: registerData.name,
+        school_id: registerData.schoolId
       })
       
       if (success) {
@@ -147,7 +163,8 @@ export default function AuthPage() {
           password: "",
           confirmPassword: "",
           name: "",
-          role: ""
+          role: "",
+          schoolId: ""
         })
       } else {
         setError("Registration failed. Please try again.")
@@ -161,6 +178,7 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
         <div className="absolute top-40 right-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{animationDelay: '2s'}}></div>
@@ -168,6 +186,7 @@ export default function AuthPage() {
       </div>
 
       <div className="relative flex min-h-screen">
+        {/* Left Panel - Branding */}
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-12 flex-col justify-center">
           <div className="max-w-md">
             <div className="flex items-center space-x-3 mb-8">
@@ -187,6 +206,7 @@ export default function AuthPage() {
               Connect with your school community through our comprehensive management system.
             </p>
 
+            {/* Features */}
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
@@ -210,8 +230,10 @@ export default function AuthPage() {
           </div>
         </div>
 
+        {/* Right Panel - Auth Forms */}
         <div className="flex-1 flex flex-col justify-center p-8 lg:p-12">
           <div className="max-w-md mx-auto w-full">
+            {/* Header */}
             <div className="text-center mb-8">
               <div className="lg:hidden flex items-center justify-center space-x-3 mb-6">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
@@ -223,6 +245,7 @@ export default function AuthPage() {
               <p className="text-gray-600">Sign in to access your account</p>
             </div>
 
+            {/* Success/Error Messages */}
             {success && (
               <Alert className="mb-6 border-green-200 bg-green-50">
                 <CheckCircle className="h-4 w-4 text-green-600" />
@@ -252,6 +275,7 @@ export default function AuthPage() {
                 </TabsTrigger>
               </TabsList>
 
+              {/* Login Tab */}
               <TabsContent value="login">
                 <Card>
                   <CardHeader>
@@ -334,6 +358,7 @@ export default function AuthPage() {
                 </Card>
               </TabsContent>
 
+              {/* Register Tab */}
               <TabsContent value="register">
                 <Card>
                   <CardHeader>

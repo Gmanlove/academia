@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { useAuth } from "@/components/auth-provider"
+import { useSupabaseAuth } from "@/components/supabase-auth-provider"
 import { 
   LogOut, 
   User, 
@@ -23,7 +23,7 @@ import {
 } from "lucide-react"
 
 export function UserMenu() {
-  const { user, logout, isLoading } = useAuth()
+  const { userProfile: user, signOut: logout, isLoading } = useSupabaseAuth()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   if (!user) return null

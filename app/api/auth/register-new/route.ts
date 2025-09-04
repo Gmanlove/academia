@@ -10,12 +10,12 @@ export async function POST(req: Request) {
       return new NextResponse("Email, password, and user data required", { status: 400 })
     }
 
-    // Sign up the user (this will send confirmation email)
+    // Sign up the user (no email verification required)
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
+        emailRedirectTo: undefined, // No redirect needed
         data: {
           name: userData.name,
           role: userData.role
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       return new NextResponse("User creation failed", { status: 500 })
     }
 
-    // Create user profile (will be activated after email confirmation)
+    // Create user profile (immediately active and verified)
     const { error: profileError } = await supabase
       .from('user_profiles')
       .insert([{
@@ -42,8 +42,8 @@ export async function POST(req: Request) {
         school_id: userData.schoolId,
         name: userData.name,
         permissions: userData.permissions || [],
-        email_verified: false, // Will be updated when email is confirmed
-        status: 'pending' // Will be activated after confirmation
+        email_verified: true, // Immediately verified
+        status: 'active' // Immediately active
       }])
 
     if (profileError) {
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       user: data.user,
       session: data.session,
-      message: "Registration successful! Please check your email for verification link."
+      message: "Registration successful! You can now log in."
     })
   } catch (error) {
     console.error('Registration error:', error)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,44 +10,12 @@ import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useRouter } from "next/navigation"
 import { 
-  Search,
-  Shield,
-  Clock,
-  Key,
-  HelpCircle,
-  AlertCircle,
-  CheckCircle,
-  Info,
-  Eye,
-  EyeOff,
-  RefreshCw,
-  FileText,
-  School,
-  User,
-  Calendar,
-  Phone,
-  Mail,
-  ExternalLink,
-  Download,
-  Share2,
-  Lock,
-  Unlock,
-  Timer,
-  Zap,
-  Star,
-  Award,
-  TrendingUp
+  Search, Shield, Clock, Key, HelpCircle, AlertCircle, CheckCircle, Info, 
+  Eye, EyeOff, RefreshCw, FileText, School, User, Calendar, Phone, Mail, 
+  ExternalLink, Download, Share2, Lock, Unlock, Timer, Zap, Star, Award, TrendingUp
 } from "lucide-react"
 
 interface TokenInfo {
@@ -88,10 +56,18 @@ export default function ResultCheckerPage() {
   
   const router = useRouter()
 
-  useEffect(() => {
-    // Load classes data - for now using empty array since we need to create classes API
-    const classInfo: any[] = []
-    setClasses(classInfo)
+  // Optimized data loading with useCallback for better performance
+  const loadInitialData = useCallback(async () => {
+    try {
+      // Load classes data from API
+      const response = await fetch('/api/classes')
+      if (response.ok) {
+        const classData = await response.json()
+        setClasses(classData)
+      }
+    } catch (error) {
+      console.log('Classes data will be loaded when available')
+    }
 
     // Check for existing session or trial count
     const storedTrials = localStorage.getItem('result-checker-trials')
@@ -100,32 +76,37 @@ export default function ResultCheckerPage() {
     }
   }, [])
 
-  const mockTokenGeneration = (studentId: string, className: string): TokenInfo => {
-    const now = new Date()
-    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
-    
-    return {
-      id: `token_${Date.now()}`,
-      studentId,
-      studentName: `Student ${studentId.slice(-4)}`,
-      className,
-      expiresAt: expiresAt.toISOString(),
-      trialsLeft: maxTrials,
-      maxTrials,
-      status: "active",
-      generatedAt: now.toISOString(),
-    }
-  }
+  useEffect(() => {
+    loadInitialData()
+  }, [loadInitialData])
+
+
 
   const validateToken = async (studentId: string, token: string): Promise<boolean> => {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Mock validation - in real app this would be an API call
-        const isValid = token.length >= 8 && studentId.includes("STU")
-        resolve(isValid)
-      }, 1000)
-    })
+    try {
+      const response = await fetch('/api/results/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ studentId, token }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Store the results data for the next page
+        localStorage.setItem('student-results', JSON.stringify(data))
+        return true
+      } else {
+        setError(data.error || 'Token validation failed')
+        return false
+      }
+    } catch (error) {
+      console.error('Token validation error:', error)
+      setError('Network error. Please try again.')
+      return false
+    }
   }
 
   const handleLogin = async () => {
@@ -150,9 +131,7 @@ export default function ResultCheckerPage() {
         localStorage.removeItem('result-checker-trials')
         setTrialCount(0)
         setSuccess("Authentication successful! Redirecting to results...")
-        setTimeout(() => {
-          router.push(`/results/view?studentId=${encodeURIComponent(studentId)}`)
-        }, 1500)
+        router.push(`/results/view?studentId=${encodeURIComponent(studentId)}`)
       } else {
         const newTrialCount = trialCount + 1
         setTrialCount(newTrialCount)
@@ -166,24 +145,72 @@ export default function ResultCheckerPage() {
     }
   }
 
-  const handleTokenRequest = () => {
+  const generateToken = async () => {
+    if (!studentId || !selectedClassInfo) {
+      setError("Please enter Student ID and select a class")
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/results/verify?studentId=${encodeURIComponent(studentId)}`, {
+        method: 'GET',
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setTokenInfo(data.token)
+        setShowTokenGenerated(true)
+      } else {
+        setError(data.error || 'Failed to generate token')
+      }
+    } catch (error) {
+      console.error('Token generation error:', error)
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleTokenRequest = async () => {
     if (!studentId || !selectedClass) {
       setError("Please enter Student ID and select a class")
       return
     }
 
-    const selectedClassInfo = classes.find(c => c.id === selectedClass)
-    if (!selectedClassInfo) {
-      setError("Please select a valid class")
-      return
-    }
-
-    // Generate mock token
-    const newTokenInfo = mockTokenGeneration(studentId, selectedClassInfo.name)
-    setTokenInfo(newTokenInfo)
-    setSuccess("Token request submitted successfully! Please check your email or contact your school.")
-    setRequestDialogOpen(false)
+    setLoading(true)
     setError(null)
+
+    try {
+      const response = await fetch('/api/results/token-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          studentId: studentId,
+          classId: selectedClass,
+          requestType: 'access_token'
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSuccess('Token request submitted successfully! You will receive your access token via email within 24-48 hours.')
+        setRequestDialogOpen(false)
+      } else {
+        setError(data.error || 'Failed to submit token request')
+      }
+    } catch (error) {
+      console.error('Token request error:', error)
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const formatTimeRemaining = (expiresAt: string) => {

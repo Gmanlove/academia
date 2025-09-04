@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { db } from "@/lib/mock-db"
 import { School, ClassRoom } from "@/lib/types"
 import {
   User,
@@ -152,21 +151,29 @@ export function AddStudentForm({ schools, classes }: AddStudentFormProps) {
         }
       }
 
-      // Save student (in real app, this would be an API call)
-      const result = db.addStudent(newStudent)
-      
-      if (result.success) {
-        alert("Student created successfully!")
+      // Save student to database via API
+      const response = await fetch('/api/students', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newStudent),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert("Student created successfully!");
         // Reset form
         setFormData({
           name: "", email: "", dateOfBirth: "", gender: "", address: "",
           schoolId: "", classId: "", parentName: "", parentEmail: "", parentPhone: "",
           secondaryParentName: "", secondaryParentEmail: "", secondaryParentPhone: "",
           allergies: "", medications: "", emergencyContact: "", bloodGroup: "",
-        })
-        setStudentId("")
+        });
+        setStudentId("");
       } else {
-        throw new Error(result.error || "Failed to create student")
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create student");
       }
     } catch (error) {
       console.error("Error creating student:", error)

@@ -30,21 +30,12 @@ export async function POST(request: NextRequest) {
 
     if (authError) {
       console.error('Login error:', authError)
-      
       // Return specific error messages
       if (authError.message.includes('Invalid login credentials')) {
         return NextResponse.json({ 
           error: 'Invalid email or password' 
         }, { status: 401 })
       }
-      
-      if (authError.message.includes('Email not confirmed')) {
-        return NextResponse.json({ 
-          error: 'Please verify your email before logging in',
-          needsVerification: true
-        }, { status: 401 })
-      }
-
       return NextResponse.json({ 
         error: authError.message 
       }, { status: 401 })
@@ -57,10 +48,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user profile
+    const userId = authData.user.id;
+    if (!userId) {
+      return NextResponse.json({ 
+        error: 'Login failed - user ID missing' 
+      }, { status: 401 })
+    }
     const { data: userProfile, error: profileError } = await supabase
       .from('user_profiles')
       .select('*')
-      .eq('id', authData.user.id)
+      .eq('id', userId)
       .single()
 
     if (profileError || !userProfile) {
@@ -74,7 +71,7 @@ export async function POST(request: NextRequest) {
     const { error: updateError } = await supabase
       .from('user_profiles')
       .update({ last_login: new Date().toISOString() })
-      .eq('id', authData.user.id)
+      .eq('id', userId)
 
     if (updateError) {
       console.error('Last login update error:', updateError)

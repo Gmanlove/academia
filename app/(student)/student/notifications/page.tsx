@@ -123,13 +123,31 @@ export default function StudentNotificationsPage() {
   const [preferencesDialogOpen, setPreferencesDialogOpen] = useState(false)
 
   useEffect(() => {
-    // Simulate API call to fetch notifications
-    setTimeout(() => {
-      const mockNotifications = generateMockNotifications()
-      setNotifications(mockNotifications)
-      setFilteredNotifications(mockNotifications.filter(n => !n.isArchived))
-      setLoading(false)
-    }, 1000)
+    // Fetch notifications from API
+    const fetchNotifications = async () => {
+      try {
+        const response = await fetch('/api/notifications')
+        if (response.ok) {
+          const data = await response.json()
+          setNotifications(data)
+          setFilteredNotifications(data.filter((n: any) => !n.isArchived))
+        } else {
+          console.error('Failed to fetch notifications')
+          // Use empty array as fallback
+          setNotifications([])
+          setFilteredNotifications([])
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error)
+        // Use empty array as fallback
+        setNotifications([])
+        setFilteredNotifications([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchNotifications()
   }, [])
 
   useEffect(() => {
@@ -156,86 +174,6 @@ export default function StudentNotificationsPage() {
 
     setFilteredNotifications(filtered)
   }, [notifications, selectedFilter, selectedType, searchQuery])
-
-  const generateMockNotifications = (): Notification[] => {
-    const now = new Date()
-    return [
-      {
-        id: "1",
-        title: "Mathematics Test Result Available",
-        message: "Your mid-term mathematics test result has been published. Score: 95%",
-        type: "result",
-        priority: "high",
-        isRead: false,
-        isStarred: false,
-        isArchived: false,
-        timestamp: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),
-        sender: "Mr. Johnson",
-        actionUrl: "/student/results",
-        metadata: { subjectId: "math", resultId: "test_001" }
-      },
-      {
-        id: "2",
-        title: "School Assembly Tomorrow",
-        message: "Special assembly scheduled for tomorrow at 9:00 AM in the main hall. Attendance is mandatory.",
-        type: "announcement",
-        priority: "medium",
-        isRead: false,
-        isStarred: true,
-        isArchived: false,
-        timestamp: new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString(),
-        sender: "Principal Office"
-      },
-      {
-        id: "3",
-        title: "Physics Assignment Due Soon",
-        message: "Reminder: Your physics lab report is due in 2 days. Don't forget to submit it on time.",
-        type: "assignment",
-        priority: "medium",
-        isRead: true,
-        isStarred: false,
-        isArchived: false,
-        timestamp: new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString(),
-        sender: "Dr. Smith"
-      },
-      {
-        id: "4",
-        title: "System Maintenance Notice",
-        message: "The student portal will be temporarily unavailable tonight from 11 PM to 1 AM for maintenance.",
-        type: "system",
-        priority: "low",
-        isRead: true,
-        isStarred: false,
-        isArchived: false,
-        timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
-        sender: "IT Department"
-      },
-      {
-        id: "5",
-        title: "Parent-Teacher Meeting Scheduled",
-        message: "A parent-teacher meeting has been scheduled for next Friday at 3:00 PM. Please inform your parents.",
-        type: "event",
-        priority: "high",
-        isRead: false,
-        isStarred: true,
-        isArchived: false,
-        timestamp: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        sender: "Class Teacher"
-      },
-      {
-        id: "6",
-        title: "Chemistry Test Results",
-        message: "Your chemistry test results are now available. Great improvement this term!",
-        type: "result",
-        priority: "medium",
-        isRead: true,
-        isStarred: false,
-        isArchived: true,
-        timestamp: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        sender: "Ms. Williams"
-      }
-    ]
-  }
 
   const handleMarkAsRead = (id: string) => {
     setNotifications(prev => prev.map(n => 

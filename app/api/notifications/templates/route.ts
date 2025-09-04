@@ -1,27 +1,43 @@
 import { NextResponse } from "next/server"
-import { db } from "@/lib/mock-db"
-import { NotificationTemplate } from "@/lib/types"
+import { createClient } from "@/lib/supabase/server"
 
 // GET /api/notifications/templates - List notification templates
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const category = searchParams.get('category')
-  const schoolId = searchParams.get('schoolId')
+  try {
+    const supabase = await createClient()
+    const { searchParams } = new URL(request.url)
+    const category = searchParams.get('category')
+    const schoolId = searchParams.get('schoolId')
 
-  const templates = db.listNotificationTemplates({
-    category: category || undefined,
-    schoolId: schoolId || undefined
-  })
+    let query = supabase
+      .from('notification_templates')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-  return NextResponse.json({
-    templates,
-    total: templates.length
-  })
+    if (category) query = query.eq('category', category)
+    if (schoolId) query = query.eq('school_id', schoolId)
+
+    const { data: templates, error } = await query
+
+    if (error) {
+      console.error('Database error:', error)
+      return new NextResponse("Database error", { status: 500 })
+    }
+
+    return NextResponse.json({
+      templates: templates || [],
+      total: templates?.length || 0
+    })
+  } catch (error) {
+    console.error('Server error:', error)
+    return new NextResponse("Internal server error", { status: 500 })
+  }
 }
 
 // POST /api/notifications/templates - Create new template
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient()
     const body = await request.json()
     
     // Validation
@@ -45,23 +61,33 @@ export async function POST(request: Request) {
       variables.add(match[1])
     }
 
-    const template: Omit<NotificationTemplate, "id" | "createdAt"> = {
+    const template = {
       name: body.name,
       category: body.category || "Administrative",
       subject: body.subject,
       message: body.message,
       variables: Array.from(variables),
-      schoolId: body.schoolId,
-      isSystem: body.isSystem || false,
-      createdBy: body.createdBy || "admin",
-      usageStats: {
-        timesUsed: 0,
-        avgOpenRate: 0,
-        avgClickRate: 0
+      school_id: body.schoolId,
+      is_system: body.isSystem || false,
+      created_by: body.createdBy || "admin",
+      usage_stats: {
+        times_used: 0,
+        avg_open_rate: 0,
+        avg_click_rate: 0
       }
     }
 
-    const created = db.addNotificationTemplate(template)
+    const { data: created, error } = await supabase
+      .from('notification_templates')
+      .insert(template)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Database error:', error)
+      return new NextResponse("Database error", { status: 500 })
+    }
+
     return NextResponse.json(created)
   } catch (error) {
     console.error("Error creating template:", error)
@@ -72,18 +98,31 @@ export async function POST(request: Request) {
 // PATCH /api/notifications/templates - Bulk template operations
 export async function PATCH(request: Request) {
   try {
+    const supabase = await createClient()
     const body = await request.json()
     const { action, templateIds, data } = body
 
     switch (action) {
       case 'bulk_delete':
-        templateIds.forEach((id: string) => db.deleteNotificationTemplate(id))
+        const { error: deleteError } = await supabase
+          .from('notification_templates')
+          .delete()
+          .in('id', templateIds)
+        
+        if (deleteError) {
+          return new NextResponse("Delete failed", { status: 500 })
+        }
         return NextResponse.json({ success: true, deleted: templateIds.length })
       
       case 'bulk_category_update':
-        templateIds.forEach((id: string) => {
-          db.updateNotificationTemplate(id, { category: data.category })
-        })
+        const { error: updateError } = await supabase
+          .from('notification_templates')
+          .update({ category: data.category })
+          .in('id', templateIds)
+
+        if (updateError) {
+          return new NextResponse("Update failed", { status: 500 })
+        }
         return NextResponse.json({ success: true, updated: templateIds.length })
       
       default:

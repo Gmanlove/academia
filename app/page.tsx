@@ -90,8 +90,8 @@ export default function HomePage() {
                 <div className="flex space-x-8">
                   <a href="#features" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Features</a>
                   <a href="#pricing" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Pricing</a>
-                  <a href="#demo" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Demo</a>
                   <a href="#testimonials" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Reviews</a>
+                  <a href="#faq" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">FAQ</a>
                   <a href="#contact" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Contact</a>
                 </div>
               </div>
@@ -822,13 +822,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Demo & Login Section */}
-      <section id="demo" className="py-20 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white">
+      {/* Access Portal Section */}
+      <section id="access" className="py-20 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Try Academia Today</h2>
+            <h2 className="text-4xl font-bold mb-4">Get Started with Academia</h2>
             <p className="text-xl text-indigo-100 mb-8 max-w-3xl mx-auto">
-              Experience our platform with live demo accounts or check your results instantly.
+              Access your academic portal or check results with your institution's credentials.
             </p>
           </div>
           
@@ -836,52 +836,52 @@ export default function HomePage() {
             {/* Live Demo Access */}
             <Card className="bg-white/10 backdrop-blur-sm border-white/20">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl text-white">🚀 Live Demo Access</CardTitle>
+                <CardTitle className="text-2xl text-white">🚀 Access Your Portal</CardTitle>
                 <CardDescription className="text-indigo-100">
-                  Test all features with sample data
+                  Login to your institution's portal
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-3">
                   <Button className="bg-blue-600 hover:bg-blue-700 text-white justify-start h-12">
-                    <Link href="/admin/dashboard" className="flex items-center w-full">
-                      <span className="text-2xl mr-3">🎯</span>
+                    <Link href="/auth" className="flex items-center w-full">
+                      <span className="text-2xl mr-3">👨‍💼</span>
                       <div className="text-left">
-                        <div className="font-semibold">Admin Dashboard</div>
-                        <div className="text-xs opacity-80">Full system oversight</div>
+                        <div className="font-semibold">Admin Login</div>
+                        <div className="text-xs opacity-80">System administration</div>
                       </div>
                     </Link>
                   </Button>
                   
                   <Button className="bg-purple-600 hover:bg-purple-700 text-white justify-start h-12">
-                    <Link href="/teacher/dashboard" className="flex items-center w-full">
+                    <Link href="/auth" className="flex items-center w-full">
                       <span className="text-2xl mr-3">👨‍🏫</span>
                       <div className="text-left">
-                        <div className="font-semibold">Teacher Portal</div>
-                        <div className="text-xs opacity-80">Score entry & analytics</div>
+                        <div className="font-semibold">Teacher Login</div>
+                        <div className="text-xs opacity-80">Grade management & analytics</div>
                       </div>
                     </Link>
                   </Button>
                   
                   <Button className="bg-green-600 hover:bg-green-700 text-white justify-start h-12">
-                    <Link href="/student/dashboard" className="flex items-center w-full">
+                    <Link href="/auth" className="flex items-center w-full">
                       <span className="text-2xl mr-3">🎓</span>
                       <div className="text-left">
-                        <div className="font-semibold">Student Portal</div>
-                        <div className="text-xs opacity-80">Progress tracking</div>
+                        <div className="font-semibold">Student Login</div>
+                        <div className="text-xs opacity-80">View progress & results</div>
                       </div>
                     </Link>
                   </Button>
                 </div>
                 
                 <div className="bg-white/10 p-4 rounded-lg mt-6">
-                  <h4 className="font-semibold mb-2">Demo Features Include:</h4>
+                  <h4 className="font-semibold mb-2">Portal Features:</h4>
                   <ul className="text-sm text-indigo-100 space-y-1">
-                    <li>• Sample student data (100+ records)</li>
-                    <li>• Complete grade management</li>
-                    <li>• Analytics & reporting tools</li>
-                    <li>• Notification system</li>
-                    <li>• Multi-school management</li>
+                    <li>• Secure authentication system</li>
+                    <li>• Role-based access control</li>
+                    <li>• Real-time data synchronization</li>
+                    <li>• Comprehensive reporting tools</li>
+                    <li>• Mobile-responsive interface</li>
                   </ul>
                 </div>
               </CardContent>
@@ -926,7 +926,7 @@ export default function HomePage() {
                 
                 <div className="bg-amber-500/20 border border-amber-400/30 p-3 rounded-lg">
                   <p className="text-sm text-amber-100">
-                    <strong>Demo Token:</strong> Use "DEMO2024" with any student ID to try the result checker.
+                    <strong>Need Help?</strong> Contact your school administrator for login credentials and result tokens.
                   </p>
                 </div>
               </CardContent>
@@ -934,7 +934,7 @@ export default function HomePage() {
           </div>
           
           <div className="text-center mt-12">
-            <p className="text-indigo-200 mb-4">Need help or want a personalized demo?</p>
+            <p className="text-indigo-200 mb-4">Ready to get started or need assistance?</p>
             <div className="flex justify-center gap-4">
               <Button variant="outline" className="border-2 border-white text-white px-6 py-3 hover:bg-white hover:text-indigo-600 transition duration-300">
                 � Contact Sales
@@ -1175,74 +1175,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-            <p className="text-xl text-gray-600">Everything you need to know about Academia</p>
-          </div>
-
-          <div className="space-y-6">
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">How quickly can we get started?</h3>
-                <p className="text-gray-600">You can start immediately with our free plan for up to 20 students. For larger schools, setup typically takes 1-2 days including data import and staff training.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Can we import existing student data?</h3>
-                <p className="text-gray-600">Yes! We support bulk import from Excel and CSV files. Our team can help with data migration from your current system at no extra cost.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">What payment methods do you accept?</h3>
-                <p className="text-gray-600">We accept all major payment methods in Nigeria including bank cards, bank transfers, USSD, and mobile wallet payments through Paystack and Flutterwave.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Is my school data secure?</h3>
-                <p className="text-gray-600">Absolutely. We use bank-level security with SSL encryption, regular backups, and secure data centers. Your data is never shared with third parties.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Do you offer training for our staff?</h3>
-                <p className="text-gray-600">Yes! All plans include comprehensive training materials and video guides. Pro and Enterprise plans include live training sessions with our team.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Can parents access results on mobile phones?</h3>
-                <p className="text-gray-600">Yes! Our platform is fully mobile-responsive. We also have dedicated mobile apps coming soon for iOS and Android.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">What happens if I need to cancel?</h3>
-                <p className="text-gray-600">You can cancel anytime with no fees. Your data remains accessible during the current billing period, and we provide export options for your records.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="p-6">
-              <CardContent>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Do you support multiple schools under one account?</h3>
-                <p className="text-gray-600">Yes! Our Enterprise plan includes multi-school management with centralized analytics and administration. Perfect for school networks and educational groups.</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
@@ -1312,7 +1244,6 @@ export default function HomePage() {
               <ul className="space-y-2 text-gray-300">
                 <li><a href="#features" className="hover:text-white transition duration-300">Features</a></li>
                 <li><a href="#pricing" className="hover:text-white transition duration-300">Pricing</a></li>
-                <li><a href="#demo" className="hover:text-white transition duration-300">Demo</a></li>
                 <li><a href="#" className="hover:text-white transition duration-300">API Documentation</a></li>
                 <li><a href="#" className="hover:text-white transition duration-300">Mobile Apps</a></li>
               </ul>

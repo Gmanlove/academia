@@ -124,164 +124,39 @@ export default function NotificationsPage() {
   })
 
   useEffect(() => {
-    // Simulate API calls
-    setTimeout(() => {
-      const notificationList = generateMockNotifications()
-      const templateList = generateMockTemplates()
-      const analytics = generateAnalyticsData()
-      setNotifications(notificationList)
-      setTemplates(templateList)
-      setAnalyticsData(analytics)
-      setLoading(false)
-    }, 500)
-  }, [])
+    async function fetchData() {
+      setLoading(true);
+      try {
+        // Fetch notifications and templates from API
+        const [notificationsRes, templatesRes, analyticsRes] = await Promise.all([
+          fetch('/api/notifications'),
+          fetch('/api/notifications/templates'),
+          fetch('/api/notifications/analytics')
+        ]);
 
-  const generateMockNotifications = (): NotificationItem[] => {
-    return [
-      {
-        id: "1",
-        title: "Term Results Released",
-        message: "Dear Parents/Students, the Term 2 results have been released. Please check your portal for detailed scores.",
-        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        audience: "School",
-        delivery: "Email",
-        status: "Sent",
-        priority: "High",
-        metadata: {
-          emailsSent: 450,
-          deliveryRate: 98.7,
-          openRate: 87.3,
-          clickRate: 45.2
+        if (notificationsRes.ok) {
+          const notificationData = await notificationsRes.json();
+          setNotifications(notificationData);
         }
-      },
-      {
-        id: "2",
-        title: "Parent-Teacher Meeting",
-        message: "Scheduled parent-teacher meeting for JSS 2 students on Friday, 15th March 2024.",
-        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        scheduledFor: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        audience: "Class",
-        delivery: "SMS",
-        status: "Scheduled",
-        priority: "Medium",
-        metadata: {
-          smssSent: 0,
-          deliveryRate: 0,
-          openRate: 0
+
+        if (templatesRes.ok) {
+          const templateData = await templatesRes.json();
+          setTemplates(templateData);
         }
-      },
-      {
-        id: "3",
-        title: "School Closure Notice",
-        message: "Due to maintenance work, the school will be closed on Monday, 20th March 2024.",
-        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        audience: "School",
-        delivery: "App",
-        status: "Sent",
-        priority: "Urgent",
-        metadata: {
-          emailsSent: 520,
-          deliveryRate: 99.2,
-          openRate: 94.8,
-          clickRate: 12.3
+
+        if (analyticsRes.ok) {
+          const analytics = await analyticsRes.json();
+          setAnalyticsData(analytics);
         }
-      },
-      {
-        id: "4",
-        title: "Assignment Deadline Reminder",
-        message: "Reminder: Mathematics assignment is due tomorrow. Please submit via the portal.",
-        createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-        audience: "Class",
-        delivery: "Push",
-        status: "Failed",
-        priority: "Medium",
-        metadata: {
-          emailsSent: 35,
-          deliveryRate: 12.5,
-          openRate: 8.1
-        }
+      } catch (error) {
+        console.error('Error fetching notification data:', error);
+      } finally {
+        setLoading(false);
       }
-    ]
-  }
-
-  const generateMockTemplates = (): NotificationTemplate[] => {
-    return [
-      {
-        id: "1",
-        name: "Result Release Announcement",
-        category: "Academic",
-        subject: "{{termName}} Results Released",
-        message: "Dear {{parentName}}, the {{termName}} results for {{studentName}} have been released. Please check your portal for detailed scores.",
-        variables: ["termName", "parentName", "studentName"],
-        isSystem: true,
-        createdBy: "system",
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: "2",
-        name: "Parent-Teacher Meeting",
-        category: "Event",
-        subject: "Parent-Teacher Meeting for {{className}}",
-        message: "You are invited to attend the parent-teacher meeting for {{className}} on {{date}} at {{time}}. Location: {{venue}}",
-        variables: ["className", "date", "time", "venue"],
-        isSystem: false,
-        createdBy: "teacher_1",
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: "3",
-        name: "Assignment Reminder",
-        category: "Reminder",
-        subject: "Assignment Due: {{subjectName}}",
-        message: "This is a reminder that your {{subjectName}} assignment is due on {{dueDate}}. Please submit via the portal.",
-        variables: ["subjectName", "dueDate"],
-        isSystem: true,
-        createdBy: "system",
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: "4",
-        name: "Emergency Alert",
-        category: "Alert",
-        subject: "URGENT: {{alertType}}",
-        message: "{{alertMessage}} Please follow the instructions provided by school staff.",
-        variables: ["alertType", "alertMessage"],
-        isSystem: true,
-        createdBy: "system",
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: "5",
-        name: "Fee Payment Reminder",
-        category: "Administrative",
-        subject: "School Fee Payment Due",
-        message: "Dear {{parentName}}, the school fee for {{studentName}} ({{amount}}) is due on {{dueDate}}. Please make payment to avoid late charges.",
-        variables: ["parentName", "studentName", "amount", "dueDate"],
-        isSystem: true,
-        createdBy: "system",
-        createdAt: new Date().toISOString()
-      }
-    ]
-  }
-
-  const generateAnalyticsData = () => {
-    return {
-      totalSent: 1247,
-      deliveryRate: 96.2,
-      openRate: 73.8,
-      clickRate: 28.5,
-      failedDeliveries: 47,
-      scheduledCount: 12,
-      monthlyTrend: [
-        { month: "Jan", sent: 890, delivered: 856, opened: 642 },
-        { month: "Feb", sent: 1023, delivered: 984, opened: 751 },
-        { month: "Mar", sent: 1247, delivered: 1199, opened: 920 },
-        { month: "Apr", sent: 1156, delivered: 1112, opened: 834 },
-        { month: "May", sent: 1389, delivered: 1334, opened: 1001 },
-        { month: "Jun", sent: 1201, delivered: 1155, opened: 886 }
-      ]
     }
-  }
+
+    fetchData();
+  }, []);
 
   const filteredNotifications = notifications.filter(notification => {
     const matchesSearch = notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
