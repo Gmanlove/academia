@@ -59,7 +59,7 @@ export default function AuthPage() {
   
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { signIn, signUp } = useSupabaseAuth()
+  const { signIn, signUp, userProfile, isLoading: authLoading } = useSupabaseAuth()
 
   useEffect(() => {
     const verified = searchParams.get('verified')
@@ -70,11 +70,31 @@ export default function AuthPage() {
     }
   }, [searchParams])
 
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (userProfile && !loading) {
+      console.log('User already authenticated, redirecting...', userProfile.role)
+      switch (userProfile.role) {
+        case 'admin':
+          router.push('/admin/dashboard')
+          break
+        case 'teacher':
+          router.push('/teacher/dashboard')
+          break
+        case 'student':
+          router.push('/student/dashboard')
+          break
+        default:
+          router.push('/')
+      }
+    }
+  }, [userProfile, loading, router])
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!loginData.email || !loginData.password || !loginData.role) {
-      setError("Please fill in all required fields")
+    if (!loginData.email || !loginData.password) {
+      setError("Please fill in email and password")
       return
     }
 
@@ -82,30 +102,17 @@ export default function AuthPage() {
     setError("")
 
     try {
+      console.log('Attempting login with:', loginData.email)
       const success = await signIn(loginData.email, loginData.password)
       
       if (success) {
         setSuccess("Login successful! Redirecting...")
-        
-        setTimeout(() => {
-          switch (loginData.role) {
-            case 'admin':
-              router.push('/admin/dashboard')
-              break
-            case 'teacher':
-              router.push('/teacher/dashboard')
-              break
-            case 'student':
-              router.push('/student/dashboard')
-              break
-            default:
-              router.push('/')
-          }
-        }, 1000)
+        // The redirect will happen automatically via the useEffect above
       } else {
-        setError("Invalid email or password")
+        setError("Invalid email or password. Please try again.")
       }
     } catch (err) {
+      console.error('Login error:', err)
       setError("Authentication failed. Please try again.")
     } finally {
       setLoading(false)
@@ -303,37 +310,22 @@ export default function AuthPage() {
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="role">Role</Label>
-                        <Select value={loginData.role} onValueChange={(value) => setLoginData(prev => ({ ...prev, role: value }))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select your role" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin">
-                              <div className="flex items-center space-x-2">
-                                <Shield className="h-4 w-4" />
-                                <span>Administrator</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="teacher">
-                              <div className="flex items-center space-x-2">
-                                <BookOpen className="h-4 w-4" />
-                                <span>Teacher</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="student">
-                              <div className="flex items-center space-x-2">
-                                <User className="h-4 w-4" />
-                                <span>Student</span>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <Button type="submit" className="w-full" disabled={loading}>
-                        {loading ? "Signing in..." : "Sign In"}
+                      <Button 
+                        type="submit" 
+                        className="w-full" 
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <div className="flex items-center space-x-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span>Signing in...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <LogIn className="h-4 w-4" />
+                            <span>Sign In</span>
+                          </div>
+                        )}
                       </Button>
                     </form>
                   </CardContent>

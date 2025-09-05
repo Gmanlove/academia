@@ -22,62 +22,141 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react"
+import { createClient } from '@/lib/supabase/client'
 
-// Mock result data
-const mockResult = {
-  id: "RES-2024-001",
-  studentName: "John Doe",
-  studentId: "STU-2024-123",
-  examTitle: "Mathematics Final Examination",
-  subject: "Mathematics",
-  examDate: "2024-01-15",
-  duration: "2 hours",
-  totalMarks: 100,
-  obtainedMarks: 87,
-  percentage: 87,
-  grade: "A",
-  position: 3,
-  totalStudents: 45,
-  status: "published",
-  sections: [
-    {
-      name: "Algebra",
-      totalMarks: 25,
-      obtainedMarks: 22,
-      percentage: 88,
-    },
-    {
-      name: "Geometry",
-      totalMarks: 25,
-      obtainedMarks: 21,
-      percentage: 84,
-    },
-    {
-      name: "Calculus",
-      totalMarks: 25,
-      obtainedMarks: 23,
-      percentage: 92,
-    },
-    {
-      name: "Statistics",
-      totalMarks: 25,
-      obtainedMarks: 21,
-      percentage: 84,
-    },
-  ],
-  teacher: "Dr. Sarah Johnson",
-  remarks: "Excellent performance in Calculus. Need to focus more on Geometry concepts.",
-  publishedAt: "2024-01-20T10:30:00Z",
+interface ResultSection {
+  name: string
+  totalMarks: number
+  obtainedMarks: number
+  percentage: number
+}
+
+interface StudentResult {
+  id: string
+  studentName: string
+  studentId: string
+  examTitle: string
+  subject: string
+  examDate: string
+  duration: string
+  totalMarks: number
+  obtainedMarks: number
+  percentage: number
+  grade: string
+  position: number
+  totalStudents: number
+  status: string
+  sections: ResultSection[]
+  teacher: string
+  remarks: string
+  publishedAt: string
 }
 
 function ResultsViewContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [result, setResult] = useState(mockResult)
+  const [result, setResult] = useState<StudentResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [accessAttempts, setAccessAttempts] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    const loadResult = async () => {
+      try {
+        const resultId = searchParams.get('id')
+        const token = searchParams.get('token')
+        
+        if (!resultId) {
+          setError('No result ID provided')
+          setLoading(false)
+          return
+        }
+
+        const supabase = createClient()
+        
+        // First, try to get the result data
+        const { data: resultData, error: resultError } = await supabase
+          .from('results')
+          .select(`
+            *,
+            students(first_name, last_name, student_id),
+            subjects(name),
+            teachers(first_name, last_name)
+          `)
+          .eq('id', resultId)
+          .single()
+
+        if (resultError || !resultData) {
+          setError('Result not found')
+          setLoading(false)
+          return
+        }
+
+        // Check if token is required and valid
+        if (resultData.access_token && resultData.access_token !== token) {
+          setError('Invalid access token')
+          setAccessAttempts(prev => prev + 1)
+          setLoading(false)
+          return
+        }
+
+        // Get total students in the same class for position calculation
+        const { count: totalStudents } = await supabase
+          .from('results')
+          .select('*', { count: 'exact', head: true })
+          .eq('class_id', resultData.class_id)
+          .eq('subject_id', resultData.subject_id)
+          .eq('term', resultData.term)
+          .eq('session', resultData.session)
+
+        // Format the result data
+        const formattedResult: StudentResult = {
+          id: resultData.id,
+          studentName: `${resultData.students.first_name} ${resultData.students.last_name}`,
+          studentId: resultData.students.student_id,
+          examTitle: `${resultData.subjects.name} - ${resultData.term} ${resultData.session}`,
+          subject: resultData.subjects.name,
+          examDate: resultData.exam_date || resultData.created_at,
+          duration: '2 hours', // This could be stored in the database
+          totalMarks: 100, // Assuming CA + Exam = 100
+          obtainedMarks: resultData.total,
+          percentage: resultData.total,
+          grade: resultData.grade,
+          position: resultData.position || 0,
+          totalStudents: totalStudents || 0,
+          status: 'published',
+          sections: [
+            {
+              name: 'Continuous Assessment',
+              totalMarks: 40,
+              obtainedMarks: resultData.ca || 0,
+              percentage: ((resultData.ca || 0) / 40) * 100,
+            },
+            {
+              name: 'Examination',
+              totalMarks: 60,
+              obtainedMarks: resultData.exam || 0,
+              percentage: ((resultData.exam || 0) / 60) * 100,
+            }
+          ],
+          teacher: `${resultData.teachers.first_name} ${resultData.teachers.last_name}`,
+          remarks: resultData.teacher_remark || 'No remarks provided',
+          publishedAt: resultData.created_at,
+        }
+
+        setResult(formattedResult)
+        setIsAuthenticated(true)
+      } catch (err) {
+        console.error('Error loading result:', err)
+        setError('Failed to load result')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadResult()
+  }, [searchParams])
   const [showDetails, setShowDetails] = useState(true)
 
   const resultId = searchParams.get("id")
@@ -148,6 +227,7 @@ function ResultsViewContent() {
   }
 
   const handleDownload = () => {
+    if (!result) return
     // Simulate PDF download
     const element = document.createElement("a")
     element.href = "#"
@@ -156,6 +236,7 @@ function ResultsViewContent() {
   }
 
   const handleShare = () => {
+    if (!result) return
     if (navigator.share) {
       navigator.share({
         title: `${result.studentName} - ${result.examTitle}`,
@@ -217,6 +298,19 @@ function ResultsViewContent() {
           <Alert>
             <Eye className="h-4 w-4" />
             <AlertDescription>Please provide a valid access code to view this result.</AlertDescription>
+          </Alert>
+        </div>
+      </div>
+    )
+  }
+
+  if (!result) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="max-w-2xl mx-auto">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>No result data available</AlertDescription>
           </Alert>
         </div>
       </div>

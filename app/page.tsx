@@ -88,11 +88,11 @@ export default function HomePage() {
               </div>
               <div className="hidden lg:block ml-10">
                 <div className="flex space-x-8">
-                  <a href="#features" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Features</a>
-                  <a href="#pricing" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Pricing</a>
-                  <a href="#testimonials" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Reviews</a>
-                  <a href="#faq" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">FAQ</a>
-                  <a href="#contact" className="text-gray-700 hover:text-blue-600 transition duration-300 font-medium">Contact</a>
+                  <a href="#features" className="text-gray-800 hover:text-blue-600 transition duration-300 font-semibold">Features</a>
+                  <a href="#pricing" className="text-gray-800 hover:text-blue-600 transition duration-300 font-semibold">Pricing</a>
+                  <a href="#testimonials" className="text-gray-800 hover:text-blue-600 transition duration-300 font-semibold">Reviews</a>
+                  <a href="#faq" className="text-gray-800 hover:text-blue-600 transition duration-300 font-semibold">FAQ</a>
+                  <a href="#contact" className="text-gray-800 hover:text-blue-600 transition duration-300 font-semibold">Contact</a>
                 </div>
               </div>
             </div>
@@ -141,8 +141,8 @@ export default function HomePage() {
                   Operations Today
                 </span>
               </h1>
-              <p className="text-xl text-gray-700 leading-relaxed max-w-xl">
-                The most comprehensive school management platform designed specifically for Nigerian schools. 
+              <p className="text-xl text-gray-800 leading-relaxed max-w-xl font-medium">
+                The most comprehensive school management platform designed for schools worldwide. 
                 Streamline operations, boost academic performance, and engage parents like never before.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
@@ -169,44 +169,44 @@ export default function HomePage() {
               </div>
             </div>
             <div className="relative">
-              <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+              <Card className="bg-white/15 backdrop-blur-md border-white/30 shadow-2xl">
                 <CardContent className="p-8">
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 shadow-lg">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-green-400 rounded-full flex items-center justify-center">
                           <span className="text-white font-bold">👨‍🎓</span>
                         </div>
                         <div>
-                          <div className="text-white font-semibold">Total Students</div>
-                          <div className="text-green-300">+12% this term</div>
+                          <div className="text-white font-bold text-lg drop-shadow-lg">Total Students</div>
+                          <div className="text-green-200 font-semibold drop-shadow-md">+12% this term</div>
                         </div>
                       </div>
-                      <div className="text-2xl font-bold text-white">1,247</div>
+                      <div className="text-3xl font-bold text-white drop-shadow-lg">1,247</div>
                     </div>
-                    <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 shadow-lg">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center">
                           <span className="text-white font-bold">👨‍🏫</span>
                         </div>
                         <div>
-                          <div className="text-white font-semibold">Active Teachers</div>
-                          <div className="text-blue-300">All online</div>
+                          <div className="text-white font-bold text-lg drop-shadow-lg">Active Teachers</div>
+                          <div className="text-blue-200 font-semibold drop-shadow-md">All online</div>
                         </div>
                       </div>
-                      <div className="text-2xl font-bold text-white">47</div>
+                      <div className="text-3xl font-bold text-white drop-shadow-lg">47</div>
                     </div>
-                    <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 shadow-lg">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-purple-400 rounded-full flex items-center justify-center">
                           <span className="text-white font-bold">📊</span>
                         </div>
                         <div>
-                          <div className="text-white font-semibold">Results Posted</div>
-                          <div className="text-purple-300">This week</div>
+                          <div className="text-white font-bold text-lg drop-shadow-lg">Results Posted</div>
+                          <div className="text-purple-200 font-semibold drop-shadow-md">This week</div>
                         </div>
                       </div>
-                      <div className="text-2xl font-bold text-white">892</div>
+                      <div className="text-3xl font-bold text-white drop-shadow-lg">892</div>
                     </div>
                   </div>
                 </CardContent>
@@ -221,31 +221,31 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Trust Indicators */}
           <div className="text-center mb-16">
-            <p className="text-gray-600 mb-8">Trusted by leading educational institutions across Nigeria</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center opacity-60">
+            <p className="text-gray-800 mb-8 text-lg font-medium">Trusted by leading educational institutions worldwide</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center opacity-80">
               <div className="text-center">
                 <div className="h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-2">
-                  <Building2 className="h-6 w-6 text-gray-400" />
+                  <Building2 className="h-6 w-6 text-gray-600" />
                 </div>
-                <p className="text-sm text-gray-500">Premium Schools</p>
+                <p className="text-sm text-gray-700 font-medium">Premium Schools</p>
               </div>
               <div className="text-center">
                 <div className="h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-2">
-                  <School className="h-6 w-6 text-gray-400" />
+                  <School className="h-6 w-6 text-gray-600" />
                 </div>
-                <p className="text-sm text-gray-500">Public Schools</p>
+                <p className="text-sm text-gray-700 font-medium">Public Schools</p>
               </div>
               <div className="text-center">
                 <div className="h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-2">
-                  <GraduationCap className="h-6 w-6 text-gray-400" />
+                  <GraduationCap className="h-6 w-6 text-gray-600" />
                 </div>
-                <p className="text-sm text-gray-500">Universities</p>
+                <p className="text-sm text-gray-700 font-medium">Universities</p>
               </div>
               <div className="text-center">
                 <div className="h-12 bg-gray-200 rounded-lg flex items-center justify-center mb-2">
-                  <BookOpen className="h-6 w-6 text-gray-400" />
+                  <BookOpen className="h-6 w-6 text-gray-600" />
                 </div>
-                <p className="text-sm text-gray-500">Academies</p>
+                <p className="text-sm text-gray-700 font-medium">Academies</p>
               </div>
             </div>
           </div>
@@ -258,8 +258,8 @@ export default function HomePage() {
                   <Users className="h-8 w-8 text-blue-600" />
                 </div>
                 <div className="text-3xl font-bold text-blue-600 mb-2">10,000+</div>
-                <p className="text-gray-600 font-medium">Students Managed</p>
-                <p className="text-sm text-gray-500 mt-1">Across 500+ schools</p>
+                <p className="text-gray-800 font-semibold">Students Managed</p>
+                <p className="text-sm text-gray-700 mt-1">Across 500+ schools</p>
               </CardContent>
             </Card>
 
@@ -269,8 +269,8 @@ export default function HomePage() {
                   <Clock className="h-8 w-8 text-green-600" />
                 </div>
                 <div className="text-3xl font-bold text-green-600 mb-2">20+</div>
-                <p className="text-gray-600 font-medium">Hours Saved Weekly</p>
-                <p className="text-sm text-gray-500 mt-1">Per school administrator</p>
+                <p className="text-gray-800 font-semibold">Hours Saved Weekly</p>
+                <p className="text-sm text-gray-700 mt-1">Per school administrator</p>
               </CardContent>
             </Card>
 
@@ -280,8 +280,8 @@ export default function HomePage() {
                   <TrendingUp className="h-8 w-8 text-purple-600" />
                 </div>
                 <div className="text-3xl font-bold text-purple-600 mb-2">15%</div>
-                <p className="text-gray-600 font-medium">Performance Boost</p>
-                <p className="text-sm text-gray-500 mt-1">Average improvement</p>
+                <p className="text-gray-800 font-semibold">Performance Boost</p>
+                <p className="text-sm text-gray-700 mt-1">Average improvement</p>
               </CardContent>
             </Card>
 
@@ -291,8 +291,8 @@ export default function HomePage() {
                   <Heart className="h-8 w-8 text-amber-600" />
                 </div>
                 <div className="text-3xl font-bold text-amber-600 mb-2">95%</div>
-                <p className="text-gray-600 font-medium">Parent Satisfaction</p>
-                <p className="text-sm text-gray-500 mt-1">Real-time engagement</p>
+                <p className="text-gray-800 font-semibold">Parent Satisfaction</p>
+                <p className="text-sm text-gray-700 mt-1">Real-time engagement</p>
               </CardContent>
             </Card>
           </div>
@@ -304,7 +304,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Complete School Management Ecosystem</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-800 max-w-3xl mx-auto font-medium">
               Four powerful portals designed for every stakeholder in your school community
             </p>
           </div>
@@ -495,42 +495,42 @@ export default function HomePage() {
                 <div className="text-2xl">📊</div>
                 <div>
                   <h4 className="font-semibold text-gray-900">Advanced Analytics</h4>
-                  <p className="text-sm text-gray-600">Performance trends, comparative analysis, and predictive insights</p>
+                  <p className="text-sm text-gray-800 font-medium">Performance trends, comparative analysis, and predictive insights</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
                 <div className="text-2xl">📱</div>
                 <div>
                   <h4 className="font-semibold text-gray-900">Multi-channel Notifications</h4>
-                  <p className="text-sm text-gray-600">Email, SMS, and in-app notifications with automation</p>
+                  <p className="text-sm text-gray-800 font-medium">Email, SMS, and in-app notifications with automation</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
                 <div className="text-2xl">📁</div>
                 <div>
                   <h4 className="font-semibold text-gray-900">Bulk Operations</h4>
-                  <p className="text-sm text-gray-600">Import/export students, bulk score entry, mass communications</p>
+                  <p className="text-sm text-gray-800 font-medium">Import/export students, bulk score entry, mass communications</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
                 <div className="text-2xl">🔒</div>
                 <div>
                   <h4 className="font-semibold text-gray-900">Role-based Security</h4>
-                  <p className="text-sm text-gray-600">Granular permissions and secure data access controls</p>
+                  <p className="text-sm text-gray-800 font-medium">Granular permissions and secure data access controls</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
                 <div className="text-2xl">🏫</div>
                 <div>
                   <h4 className="font-semibold text-gray-900">Multi-school Support</h4>
-                  <p className="text-sm text-gray-600">Manage multiple schools under one centralized system</p>
+                  <p className="text-sm text-gray-800 font-medium">Manage multiple schools under one centralized system</p>
                 </div>
               </div>
               <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
                 <div className="text-2xl">📝</div>
                 <div>
                   <h4 className="font-semibold text-gray-900">Custom Grading</h4>
-                  <p className="text-sm text-gray-600">Flexible grading systems and automated calculations</p>
+                  <p className="text-sm text-gray-800 font-medium">Flexible grading systems and automated calculations</p>
                 </div>
               </div>
             </div>
@@ -1259,7 +1259,7 @@ export default function HomePage() {
                 <li>
                   <div className="flex items-center space-x-2">
                     <span>📞</span>
-                    <span>+234 (0) 812-345-6789</span>
+                    <span>+2348036234870</span>
                   </div>
                 </li>
                 <li>

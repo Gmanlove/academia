@@ -24,6 +24,7 @@ interface AuthContextType {
   userProfile: UserProfile | null
   isAuthenticated: boolean
   isLoading: boolean
+  isAuthOperationLoading: boolean
   signIn: (email: string, password: string) => Promise<boolean>
   signOut: () => Promise<void>
   signUp: (email: string, password: string, userData: Partial<UserProfile>) => Promise<boolean>
@@ -36,7 +37,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function SupabaseAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true) // For initial auth state
+  const [isAuthOperationLoading, setIsAuthOperationLoading] = useState(false) // For sign-in/out operations
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
@@ -107,6 +109,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   const signIn = async (email: string, password: string): Promise<boolean> => {
     try {
       console.log('Attempting sign in for:', email)
+      setIsAuthOperationLoading(true)
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -118,15 +121,22 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         return false
       }
 
+      if (!data.user) {
+        console.error('No user data returned')
+        return false
+      }
+
       console.log('Sign in successful, user ID:', data.user?.id)
       
-      // Wait a moment for the session to be established
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Fetch user profile immediately
+      await fetchUserProfile(data.user.id)
       
       return true
     } catch (error) {
       console.error('Sign in error:', error)
       return false
+    } finally {
+      setIsAuthOperationLoading(false)
     }
   }
 
@@ -199,6 +209,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     userProfile,
     isAuthenticated: !!user,
     isLoading,
+    isAuthOperationLoading,
     signIn,
     signOut,
     signUp,

@@ -29,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { Student, Subject, ClassRoom, ResultEntry } from "@/lib/types"
+import { createClient } from "@/lib/supabase/client"
 import {
   Save,
   AlertCircle,
@@ -134,15 +135,139 @@ export default function ScoreEntryPage() {
   const [autoSaveInterval, setAutoSaveInterval] = useState(2000) // 2 seconds default
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false)
   const [pendingSubmission, setPendingSubmission] = useState(false)
+  const [classes, setClasses] = useState<ClassRoom[]>([])
+  const [subjects, setSubjects] = useState<Subject[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Mock data - in real app, these would come from API
-  const classes = db.listClasses()
-  const subjects = db.listSubjects()
-  const teacherClasses = classes.data.filter(c => c.teacherId === "current-teacher-id") // Mock current teacher
-  const classSubjects = subjects.data.filter(s => selectedClassId ? s.classIds?.includes(selectedClassId) : false)
+  // Add state for global statistics
+  const [globalStats, setGlobalStats] = useState({
+    totalStudents: 0,
+    activeTeachers: 0,
+    resultsPosted: 0,
+    totalStudentsGrowth: '+0%',
+    activeTeachersStatus: 'Loading...',
+    resultsPostedPeriod: 'This week'
+  })
 
-  const selectedClass = classes.data.find(c => c.id === selectedClassId)
-  const selectedSubject = subjects.data.find(s => s.id === selectedSubjectId)
+  // Load global statistics
+  useEffect(() => {
+    const loadGlobalStats = async () => {
+      try {
+        const supabase = createClient()
+        
+        console.log('Loading global statistics...')
+        
+        // Get total students across all schools
+        const { count: totalStudents } = await supabase
+          .from('students')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'active')
+
+        console.log('Total students:', totalStudents)
+
+        // Get active teachers
+        const { count: activeTeachers } = await supabase
+          .from('teachers')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'active')
+
+        console.log('Active teachers:', activeTeachers)
+
+        // Get results posted this week
+        const oneWeekAgo = new Date()
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+        
+        const { count: resultsPosted } = await supabase
+          .from('results')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', oneWeekAgo.toISOString())
+
+        console.log('Results posted this week:', resultsPosted)
+
+        // Calculate growth percentage (compare with previous month)
+        const oneMonthAgo = new Date()
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1)
+        
+        const { count: previousMonthStudents } = await supabase
+          .from('students')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'active')
+          .lt('created_at', oneMonthAgo.toISOString())
+
+        const growthPercentage = (previousMonthStudents && totalStudents) 
+          ? Math.round(((totalStudents - previousMonthStudents) / previousMonthStudents) * 100)
+          : 0
+
+        setGlobalStats({
+          totalStudents: totalStudents || 0,
+          activeTeachers: activeTeachers || 0,
+          resultsPosted: resultsPosted || 0,
+          totalStudentsGrowth: growthPercentage > 0 ? `+${growthPercentage}%` : `${growthPercentage}%`,
+          activeTeachersStatus: 'All online',
+          resultsPostedPeriod: 'This week'
+        })
+
+        console.log('Global stats loaded successfully')
+      } catch (error) {
+        console.error('Error loading global stats:', error)
+        // Set default values on error
+        setGlobalStats({
+          totalStudents: 0,
+          activeTeachers: 0,
+          resultsPosted: 0,
+          totalStudentsGrowth: '+0%',
+          activeTeachersStatus: 'Offline',
+          resultsPostedPeriod: 'This week'
+        })
+      }
+    }
+
+    loadGlobalStats()
+  }, [])
+
+  // Load classes and subjects on component mount
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const supabase = createClient()
+        
+        // Fetch classes for current teacher/school
+        const { data: classesData, error: classesError } = await supabase
+          .from('classes')
+          .select('*')
+          
+        if (classesError) {
+          console.error('Error fetching classes:', classesError)
+        } else {
+          setClasses(classesData || [])
+        }
+        
+        // Fetch subjects
+        const { data: subjectsData, error: subjectsError } = await supabase
+          .from('subjects')
+          .select('*')
+          
+        if (subjectsError) {
+          console.error('Error fetching subjects:', subjectsError)
+        } else {
+          setSubjects(subjectsData || [])
+        }
+      } catch (error) {
+        console.error('Error loading initial data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadInitialData()
+  }, [])
+
+  // Filter data based on current teacher and selections
+  const teacherClasses = classes // In real app, filter by current teacher
+  const classSubjects = subjects // In real app, filter by class
+
+  const selectedClass = classes.find(c => c.id === selectedClassId)
+  const selectedSubject = subjects.find(s => s.id === selectedSubjectId)
 
   // Validation rules based on subject and class
   const validationRules: ValidationRule[] = [
@@ -153,48 +278,89 @@ export default function ScoreEntryPage() {
 
   // Load students when class is selected
   useEffect(() => {
-    if (selectedClassId) {
-      const classStudents = db.listStudents().data.filter(s => s.classId === selectedClassId)
-      setStudents(classStudents)
-      
-      // Initialize scores with existing data or empty values
-      const initialScores: Record<string, ScoreEntry> = {}
-      classStudents.forEach(student => {
-        const existingResults = db.getStudentResults(student.id)
-        const existingResult = existingResults.find(r => 
-          r.subjectId === selectedSubjectId && r.term === selectedTerm
-        )
+    const loadStudentsAndScores = async () => {
+      if (!selectedClassId) {
+        setStudents([])
+        setScores({})
+        setSelectedStudents(new Set())
+        return
+      }
+
+      try {
+        const supabase = createClient()
         
-        // Get previous term results for comparison
-        const previousTerms = ["Term 1", "Term 2", "Term 3"]
-        const currentTermIndex = previousTerms.indexOf(selectedTerm)
-        const previousTerm = currentTermIndex > 0 ? previousTerms[currentTermIndex - 1] : null
-        const previousResult = previousTerm ? 
-          existingResults.find(r => r.subjectId === selectedSubjectId && r.term === previousTerm) : null
+        // Fetch students for the selected class
+        const { data: classStudents, error: studentsError } = await supabase
+          .from('students')
+          .select('*')
+          .eq('class_id', selectedClassId)
         
-        initialScores[student.id] = {
-          studentId: student.id,
-          ca: existingResult?.ca ?? "",
-          exam: existingResult?.exam ?? "",
-          total: existingResult?.total ?? 0,
-          grade: existingResult?.grade ?? "",
-          remarks: existingResult?.teacherRemark ?? "",
-          modified: false,
-          saved: !!existingResult,
-          previousCA: previousResult?.ca,
-          previousExam: previousResult?.exam,
-          previousTotal: previousResult?.total,
-          lastModified: existingResult?.lastModified,
-          validationWarnings: []
+        if (studentsError) {
+          console.error('Error fetching students:', studentsError)
+          return
         }
-      })
-      setScores(initialScores)
-      setSelectedStudents(new Set()) // Clear selection when class changes
-    } else {
-      setStudents([])
-      setScores({})
-      setSelectedStudents(new Set())
+        
+        setStudents(classStudents || [])
+        
+        // Initialize scores with existing data or empty values
+        const initialScores: Record<string, ScoreEntry> = {}
+        
+        for (const student of classStudents || []) {
+          // Fetch existing results for this student, subject, and term
+          const { data: existingResults, error: resultsError } = await supabase
+            .from('results')
+            .select('*')
+            .eq('student_id', student.id)
+            .eq('subject_id', selectedSubjectId)
+            .eq('term', selectedTerm)
+            .single()
+          
+          if (resultsError && resultsError.code !== 'PGRST116') {
+            console.error('Error fetching results:', resultsError)
+          }
+          
+          // Get previous term results for comparison
+          const previousTerms = ["Term 1", "Term 2", "Term 3"]
+          const currentTermIndex = previousTerms.indexOf(selectedTerm)
+          const previousTerm = currentTermIndex > 0 ? previousTerms[currentTermIndex - 1] : null
+          
+          let previousResult = null
+          if (previousTerm) {
+            const { data: prevResult } = await supabase
+              .from('results')
+              .select('*')
+              .eq('student_id', student.id)
+              .eq('subject_id', selectedSubjectId)
+              .eq('term', previousTerm)
+              .single()
+            previousResult = prevResult
+          }
+          
+          initialScores[student.id] = {
+            studentId: student.id,
+            ca: existingResults?.ca ?? "",
+            exam: existingResults?.exam ?? "",
+            total: existingResults?.total ?? 0,
+            grade: existingResults?.grade ?? "",
+            remarks: existingResults?.teacher_remark ?? "",
+            modified: false,
+            saved: !!existingResults,
+            previousCA: previousResult?.ca,
+            previousExam: previousResult?.exam,
+            previousTotal: previousResult?.total,
+            lastModified: existingResults?.updated_at,
+            validationWarnings: []
+          }
+        }
+        
+        setScores(initialScores)
+        setSelectedStudents(new Set()) // Clear selection when class changes
+      } catch (error) {
+        console.error('Error loading students and scores:', error)
+      }
     }
+
+    loadStudentsAndScores()
   }, [selectedClassId, selectedSubjectId, selectedTerm])
 
   // Calculate total and grade with enhanced validation
@@ -338,8 +504,34 @@ export default function ScoreEntryPage() {
       const timer = setTimeout(async () => {
         setAutoSaving(true)
         try {
-          // Mock auto-save - in real app, this would be an API call
-          await new Promise(resolve => setTimeout(resolve, 800))
+          const supabase = createClient()
+          
+          // Prepare entries for auto-save
+          const entriesToSave = modifiedEntries.map(entry => ({
+            student_id: entry.studentId,
+            class_id: selectedClassId,
+            subject_id: selectedSubjectId,
+            ca: typeof entry.ca === "number" ? entry.ca : 0,
+            exam: typeof entry.exam === "number" ? entry.exam : 0,
+            total: entry.total,
+            grade: entry.grade,
+            term: selectedTerm,
+            session: selectedSession,
+            teacher_remark: entry.remarks || "",
+            updated_at: new Date().toISOString(),
+            teacher_id: "current-teacher-id" // TODO: Get from auth context
+          }))
+
+          // Auto-save to Supabase
+          const { error } = await supabase
+            .from('results')
+            .upsert(entriesToSave, {
+              onConflict: 'student_id,subject_id,term,session'
+            })
+
+          if (error) {
+            throw error
+          }
           
           setScores(prev => {
             const updated = { ...prev }
@@ -473,10 +665,10 @@ export default function ScoreEntryPage() {
   }
 
   const selectAllStudents = () => {
-    if (selectedStudents.size === filteredStudents.length) {
+    if (selectedStudents.size === filteredAndSortedStudents.length) {
       setSelectedStudents(new Set())
     } else {
-      setSelectedStudents(new Set(filteredStudents.map(s => s.id)))
+      setSelectedStudents(new Set(filteredAndSortedStudents.map((s: Student) => s.id)))
     }
   }
 
@@ -495,25 +687,35 @@ export default function ScoreEntryPage() {
     setConfirmationDialogOpen(false)
     
     try {
+      const supabase = createClient()
+      
       const entriesToSave = Object.values(scores)
         .filter(s => s.ca !== "" || s.exam !== "" || s.remarks)
         .map(s => ({
-          studentId: s.studentId,
-          classId: selectedClassId,
-          subjectId: selectedSubjectId,
+          student_id: s.studentId,
+          class_id: selectedClassId,
+          subject_id: selectedSubjectId,
           ca: typeof s.ca === "number" ? s.ca : 0,
           exam: typeof s.exam === "number" ? s.exam : 0,
           total: s.total,
           grade: s.grade,
           term: selectedTerm,
           session: selectedSession,
-          teacherRemark: s.remarks || "",
-          lastModified: new Date().toISOString(),
-          teacherId: "current-teacher-id"
+          teacher_remark: s.remarks || "",
+          updated_at: new Date().toISOString(),
+          teacher_id: "current-teacher-id" // TODO: Get from auth context
         }))
 
-      // Mock API call with realistic delay
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // Save to Supabase using upsert (insert or update)
+      const { error } = await supabase
+        .from('results')
+        .upsert(entriesToSave, {
+          onConflict: 'student_id,subject_id,term,session'
+        })
+
+      if (error) {
+        throw error
+      }
       
       // Mark all as saved
       setScores(prev => {
@@ -533,6 +735,7 @@ export default function ScoreEntryPage() {
       alert(`✅ Successfully saved scores for ${entriesToSave.length} students`)
       
     } catch (error) {
+      console.error('Error saving scores:', error)
       alert("❌ Error saving scores. Please try again.")
     } finally {
       setSaving(false)
@@ -542,8 +745,7 @@ export default function ScoreEntryPage() {
   // Enhanced filtering and sorting
   const filteredAndSortedStudents = students
     .filter(student => {
-      const matchesSearch = student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            student.studentId.toLowerCase().includes(searchTerm.toLowerCase())
       
       if (!matchesSearch) return false
@@ -560,8 +762,8 @@ export default function ScoreEntryPage() {
       
       switch (sortField) {
         case "name":
-          aValue = `${a.firstName} ${a.lastName}`.toLowerCase()
-          bValue = `${b.firstName} ${b.lastName}`.toLowerCase()
+          aValue = a.name.toLowerCase()
+          bValue = b.name.toLowerCase()
           break
         case "studentId":
           aValue = a.studentId.toLowerCase()
@@ -580,8 +782,8 @@ export default function ScoreEntryPage() {
           bValue = typeof scores[b.id]?.exam === "number" ? scores[b.id].exam : -1
           break
         default:
-          aValue = a.firstName
-          bValue = b.firstName
+          aValue = a.name
+          bValue = b.name
       }
       
       if (sortDirection === "asc") {
@@ -628,8 +830,19 @@ export default function ScoreEntryPage() {
 
   // Helper functions
   const getStudentPhoto = (student: Student) => {
-    // In real app, this would return actual photo URL
-    return "/placeholder-user.jpg"
+    // In a real application, you would have actual profile images stored in Supabase Storage
+    // For now, we'll use a default avatar or generate initials-based avatars
+    if (student.photoUrl) {
+      return student.photoUrl
+    }
+    
+    // Generate initials from the name
+    const nameParts = student.name.split(' ')
+    const initials = nameParts.length >= 2 
+      ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`
+      : student.name.slice(0, 2)
+    
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&background=random`
   }
 
   const getGradeBadgeVariant = (grade: string) => {
@@ -648,6 +861,65 @@ export default function ScoreEntryPage() {
     const diff = current - previous
     if (Math.abs(diff) < 2) return { type: "stable", diff }
     return { type: diff > 0 ? "improved" : "declined", diff }
+  }
+
+  // Show loading screen while initial data is being fetched
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <Calculator className="h-8 w-8 text-primary" />
+              📝 Score Entry & Management
+            </h1>
+            <p className="text-muted-foreground">
+              Loading classes and subjects...
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Badge variant="secondary" className="flex items-center space-x-1">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Loading...</span>
+            </Badge>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <BookOpen className="h-5 w-5" />
+                <span>Class & Subject Selection</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Class</Label>
+                <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+              <div className="space-y-2">
+                <Label>Subject</Label>
+                <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Loading Statistics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2"></div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -795,20 +1067,81 @@ export default function ScoreEntryPage() {
       {selectedClassId && selectedSubjectId && (
         <>
           {/* Enhanced Statistics Dashboard */}
+          <div className="relative bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8 rounded-2xl border border-slate-200 shadow-lg mb-8 overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+            <div className="absolute top-0 right-0 w-40 h-40 bg-blue-200 rounded-full opacity-10 -translate-y-20 translate-x-20"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-200 rounded-full opacity-10 translate-y-16 -translate-x-16"></div>
+            
+            {/* Content */}
+            <div className="relative z-10">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-slate-800 mb-2">📊 Academic Dashboard</h2>
+                <p className="text-slate-600">Key metrics and statistics overview</p>
+              </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-6">
+              {/* Featured Stats - First Row */}
+              <div className="lg:col-span-2">
+                <Card className="h-full border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <CardContent className="p-8">
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="text-5xl mb-2">👨‍🎓</div>
+                    <div className="space-y-2">
+                      <p className="text-4xl font-bold text-blue-700">{globalStats.totalStudents.toLocaleString()}</p>
+                      <p className="text-lg font-semibold text-blue-600">Total Students</p>
+                      <p className="text-sm text-green-600 font-medium bg-green-100 px-3 py-1 rounded-full border border-green-200">{globalStats.totalStudentsGrowth} this term</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="lg:col-span-2">
+              <Card className="h-full border-2 border-green-200 bg-gradient-to-br from-green-50 to-green-100 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <CardContent className="p-8">
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="text-5xl mb-2">👨‍🏫</div>
+                    <div className="space-y-2">
+                      <p className="text-4xl font-bold text-green-700">{globalStats.activeTeachers}</p>
+                      <p className="text-lg font-semibold text-green-600">Active Teachers</p>
+                      <p className="text-sm text-blue-600 font-medium bg-blue-100 px-3 py-1 rounded-full border border-blue-200">{globalStats.activeTeachersStatus}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="lg:col-span-2">
+              <Card className="h-full border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <CardContent className="p-8">
+                  <div className="flex flex-col items-center text-center space-y-3">
+                    <div className="text-5xl mb-2">📊</div>
+                    <div className="space-y-2">
+                      <p className="text-4xl font-bold text-purple-700">{globalStats.resultsPosted}</p>
+                      <p className="text-lg font-semibold text-purple-600">Results Posted</p>
+                      <p className="text-sm text-orange-600 font-medium bg-orange-100 px-3 py-1 rounded-full border border-orange-200">{globalStats.resultsPostedPeriod}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Secondary Stats Row */}
           <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-            <Card>
+            <Card className="border border-gray-200 hover:shadow-md transition-shadow duration-200">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-2">
                   <Users className="h-8 w-8 text-blue-500" />
                   <div>
                     <p className="text-2xl font-bold">{stats.totalStudents}</p>
-                    <p className="text-muted-foreground">Total Students</p>
+                    <p className="text-muted-foreground">In Class</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border border-gray-200 hover:shadow-md transition-shadow duration-200">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="h-8 w-8 text-green-500" />
@@ -820,7 +1153,7 @@ export default function ScoreEntryPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border border-gray-200 hover:shadow-md transition-shadow duration-200">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-2">
                   <BarChart3 className="h-8 w-8 text-purple-500" />
@@ -832,7 +1165,7 @@ export default function ScoreEntryPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border border-gray-200 hover:shadow-md transition-shadow duration-200">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-2">
                   <Calculator className="h-8 w-8 text-orange-500" />
@@ -844,7 +1177,7 @@ export default function ScoreEntryPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border border-gray-200 hover:shadow-md transition-shadow duration-200">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-2">
                   <Target className="h-8 w-8 text-indigo-500" />
@@ -856,7 +1189,7 @@ export default function ScoreEntryPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border border-gray-200 hover:shadow-md transition-shadow duration-200">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="h-8 w-8 text-green-500" />
@@ -867,6 +1200,8 @@ export default function ScoreEntryPage() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+            </div>
           </div>
 
           {/* Grade Distribution */}
@@ -939,7 +1274,7 @@ export default function ScoreEntryPage() {
                     <Checkbox
                       id="incomplete"
                       checked={showOnlyIncomplete}
-                      onCheckedChange={setShowOnlyIncomplete}
+                      onCheckedChange={(checked) => setShowOnlyIncomplete(checked === true)}
                     />
                     <Label htmlFor="incomplete">Show only incomplete</Label>
                   </div>
@@ -948,7 +1283,7 @@ export default function ScoreEntryPage() {
                     <Checkbox
                       id="show-photos"
                       checked={showStudentPhotos}
-                      onCheckedChange={setShowStudentPhotos}
+                      onCheckedChange={(checked) => setShowStudentPhotos(checked === true)}
                     />
                     <Label htmlFor="show-photos">Show photos</Label>
                   </div>
@@ -1085,7 +1420,7 @@ export default function ScoreEntryPage() {
                               <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100">
                                 <img
                                   src={getStudentPhoto(student)}
-                                  alt={`${student.firstName} ${student.lastName}`}
+                                  alt={student.name}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
@@ -1095,7 +1430,7 @@ export default function ScoreEntryPage() {
                           <TableCell className="font-mono">{student.studentId}</TableCell>
                           <TableCell className="font-medium">
                             <div>
-                              {student.firstName} {student.lastName}
+                              {student.name}
                               {score.previousTotal && (
                                 <div className="text-xs text-muted-foreground">
                                   Previous: {score.previousTotal}

@@ -63,9 +63,13 @@ export default function AuthCodeError() {
                 console.log('✅ User profile updated')
                 
                 // Get user profile to determine redirect
-                const profileResponse = await fetch(`/api/debug/check-user?email=${data.user.email}`)
-                if (profileResponse.ok) {
-                  const userData = await profileResponse.json()
+                const { data: userData, error: userError } = await supabase
+                  .from('user_profiles')
+                  .select('role, school_id')
+                  .eq('email', data.user.email)
+                  .single()
+                
+                if (!userError && userData) {
                   
                   let redirectPath = '/admin/dashboard' // default
                   if (userData.role) {

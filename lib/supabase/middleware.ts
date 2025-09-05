@@ -42,16 +42,26 @@ export async function updateSession(request: NextRequest) {
     const { supabase, response } = createClient(request)
 
     // Refresh session if expired - required for Server Components
-    const { data: { user } } = await supabase.auth.getUser()
+    // Add a timeout to prevent hanging requests
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Supabase request timeout')), 5000)
+    )
+    
+    const userPromise = supabase.auth.getUser()
+    
+    try {
+      const { data: { user } } = await Promise.race([userPromise, timeoutPromise]) as any
+      console.log('Middleware: User session checked successfully')
+    } catch (authError: any) {
+      console.log('Middleware: Auth check failed, continuing...', authError?.message || authError)
+      // Continue without user - let the app handle authentication
+    }
 
     // Return response with potentially updated cookies
     return response
-  } catch (error) {
+  } catch (error: any) {
     // If anything goes wrong, just continue to the requested page
-    return NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    })
+    console.log('Middleware: Error occurred, continuing...', error?.message || error)
+    return NextResponse.next()
   }
 }
