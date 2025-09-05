@@ -82,11 +82,15 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log('Fetching user profile for:', userId)
+      
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .single()
+
+      console.log('Profile fetch result:', { data: !!data, error: error?.message })
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching user profile:', error)
@@ -94,6 +98,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       }
 
       setUserProfile(data)
+      console.log('User profile set successfully')
     } catch (error) {
       console.error('Error fetching user profile:', error)
     }
@@ -101,6 +106,8 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
 
   const signIn = async (email: string, password: string): Promise<boolean> => {
     try {
+      console.log('Attempting sign in for:', email)
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
@@ -111,6 +118,11 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
         return false
       }
 
+      console.log('Sign in successful, user ID:', data.user?.id)
+      
+      // Wait a moment for the session to be established
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
       return true
     } catch (error) {
       console.error('Sign in error:', error)
@@ -135,37 +147,33 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
 
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>): Promise<boolean> => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password
+      // Use our API endpoint instead of direct Supabase auth
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          userData: {
+            name: userData.name || '',
+            role: userData.role || 'student',
+            schoolId: userData.school_id,
+            permissions: userData.permissions || [],
+          }
+        })
       })
+
+      const result = await response.json()
       
-      if (error) {
-        console.error('Sign up error:', error)
+      if (!response.ok) {
+        console.error('Registration error:', result.error)
         return false
       }
-      
-      // Create user profile
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert([{
-            id: data.user.id,
-            email: data.user.email!,
-            role: userData.role || 'student',
-            school_id: userData.school_id,
-            name: userData.name || '',
-            permissions: userData.permissions || [],
-            email_verified: false,
-            status: 'active'
-          }])
-        
-        if (profileError) {
-          console.error('Error creating user profile:', profileError)
-          return false
-        }
-      }
-      
+
+      // Registration successful, user can now sign in immediately
+      console.log('Registration successful:', result.message)
       return true
     } catch (error) {
       console.error('Sign up error:', error)

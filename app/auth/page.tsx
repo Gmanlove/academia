@@ -140,8 +140,14 @@ export default function AuthPage() {
       })
       
       if (success) {
-        setSuccess("Registration successful! Please check your email to verify your account.")
+        setSuccess("Registration successful! You can now sign in to your account.")
         setActiveTab("login")
+        // Pre-fill the login form with the registered email
+        setLoginData({
+          email: registerData.email,
+          password: "",
+          role: registerData.role
+        })
         setRegisterData({
           email: "",
           password: "",

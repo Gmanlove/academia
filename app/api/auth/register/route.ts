@@ -104,16 +104,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Register user with Supabase Auth
-    const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
+    // Register user with Supabase Auth (skip email verification)
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback`,
-        data: {
-          name: userData.name || email.split("@")[0],
-          role: userData.role || "student",
-        },
+      email_confirm: true, // Skip email verification
+      user_metadata: {
+        name: userData.name || email.split("@")[0],
+        role: userData.role || "student",
       },
     })
 
@@ -149,8 +147,8 @@ export async function POST(request: NextRequest) {
       school_id: userData.schoolId || defaultSchool?.id,
       name: userData.name || email.split("@")[0], // Use 'name' not 'full_name'
       permissions: [],
-      email_verified: false,
-      status: "pending",
+      email_verified: true, // Auto-verify email
+      status: "active", // Set as active immediately
     })
 
     if (profileError) {
@@ -169,11 +167,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Registration successful! Please check your email to verify your account.",
+      message: "Registration successful! You can now sign in to your account.",
       user: {
         id: authData.user.id,
         email: authData.user.email,
-        needsVerification: !authData.user.email_confirmed_at,
+        needsVerification: false, // No verification needed
+        canSignIn: true, // Ready to sign in
       },
     })
   } catch (error) {
