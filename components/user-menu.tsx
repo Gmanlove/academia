@@ -73,8 +73,8 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="flex items-center space-x-2 h-10 px-3">
-          <Avatar className="h-7 w-7">
+        <Button variant="outline" className="flex items-center space-x-1 sm:space-x-2 h-9 sm:h-10 px-2 sm:px-3">
+          <Avatar className="h-6 w-6 sm:h-7 sm:w-7">
             <AvatarImage src="/placeholder-user.jpg" alt={user.name} />
             <AvatarFallback className="text-xs font-semibold">
               {getInitials(user.name)}
@@ -84,17 +84,17 @@ export function UserMenu() {
             <span className="text-sm font-medium leading-none">{user.name}</span>
             <span className="text-xs text-gray-500 leading-none mt-0.5">{user.role}</span>
           </div>
-          <ChevronDown className="h-4 w-4 text-gray-400" />
+          <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent className="w-80 p-0" align="end" forceMount>
+      <DropdownMenuContent className="w-72 sm:w-80 p-0" align="end" forceMount>
         {/* User Info Header */}
-        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <div className="flex items-center space-x-3">
-            <Avatar className="h-12 w-12">
+        <div className="p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
               <AvatarImage src="/placeholder-user.jpg" alt={user.name} />
-              <AvatarFallback className="text-lg font-bold">
+              <AvatarFallback className="text-sm sm:text-lg font-bold">
                 {getInitials(user.name)}
               </AvatarFallback>
             </Avatar>

@@ -76,13 +76,13 @@ export default function HomePage() {
         isScrolled ? 'bg-white/95 backdrop-blur-lg shadow-xl border-b border-gray-100' : 'bg-white shadow-lg'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-20">
+          <div className="flex justify-between h-16 sm:h-20">
             <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                  <GraduationCap className="h-6 w-6 text-white" />
+              <div className="flex-shrink-0 flex items-center space-x-2 sm:space-x-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   Academia
                 </h1>
               </div>
@@ -96,16 +96,17 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold">
-                <Link href="/results" className="flex items-center space-x-2">
-                  <Search className="w-4 h-4" />
-                  <span>Check Results</span>
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Button variant="outline" size="sm" className="border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold text-xs sm:text-sm px-2 sm:px-4">
+                <Link href="/results" className="flex items-center space-x-1 sm:space-x-2">
+                  <Search className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Check Results</span>
+                  <span className="sm:hidden">Results</span>
                 </Link>
               </Button>
-              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg font-semibold">
-                <Link href="/auth" className="flex items-center space-x-2">
-                  <Rocket className="w-4 h-4" />
+              <Button size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg font-semibold text-xs sm:text-sm px-2 sm:px-4">
+                <Link href="/auth" className="flex items-center space-x-1 sm:space-x-2">
+                  <Rocket className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span>Sign In</span>
                 </Link>
               </Button>
@@ -115,24 +116,25 @@ export default function HomePage() {
       </nav>
 
       {/* Enhanced Hero Section */}
-      <section className="relative bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 pt-32 pb-20 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 pt-20 sm:pt-32 pb-12 sm:pb-20 overflow-hidden">
         {/* Background Elements */}
         <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-          <div className="absolute top-40 right-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{animationDelay: '2s'}}></div>
-          <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{animationDelay: '4s'}}></div>
+          <div className="absolute top-10 sm:top-20 left-5 sm:left-10 w-40 h-40 sm:w-72 sm:h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+          <div className="absolute top-20 sm:top-40 right-5 sm:right-10 w-40 h-40 sm:w-72 sm:h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{animationDelay: '2s'}}></div>
+          <div className="absolute bottom-10 sm:bottom-20 left-1/2 w-40 h-40 sm:w-72 sm:h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" style={{animationDelay: '4s'}}></div>
         </div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-16 items-center">
+            <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
               {/* Trust Badge */}
-              <Badge className="bg-green-100 text-green-800 border-green-200 px-4 py-2 text-sm font-semibold">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Trusted by 500+ Schools Nationwide
+              <Badge className="bg-green-100 text-green-800 border-green-200 px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-semibold inline-flex items-center">
+                <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Trusted by 500+ Schools Nationwide</span>
+                <span className="sm:hidden">500+ Schools Trust Us</span>
               </Badge>
               
-              <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold leading-tight">
                 <span className="bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
                   Transform Your School
                 </span>
@@ -141,12 +143,12 @@ export default function HomePage() {
                   Operations Today
                 </span>
               </h1>
-              <p className="text-xl text-gray-800 leading-relaxed max-w-xl font-medium">
+              <p className="text-base sm:text-lg lg:text-xl text-gray-800 leading-relaxed max-w-xl font-medium mx-auto lg:mx-0">
                 The most comprehensive school management platform designed for schools worldwide. 
                 Streamline operations, boost academic performance, and engage parents like never before.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button className="bg-yellow-400 text-blue-900 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-yellow-300 transition duration-300 transform hover:scale-105">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
+                <Button className="bg-yellow-400 text-blue-900 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-yellow-300 transition duration-300 transform hover:scale-105">
                   <Link href="#demo">🚀 Try Demo</Link>
                 </Button>
                 <Button variant="outline" className="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-700 transition duration-300">

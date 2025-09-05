@@ -74,36 +74,36 @@ export function AdminSidebar({ role = "admin" }: AppSidebarProps) {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="p-3 sm:p-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">A</span>
+          <div className="w-7 h-7 sm:w-8 sm:h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+            <span className="text-primary-foreground font-bold text-xs sm:text-sm">A</span>
           </div>
-          <div className="flex flex-col">
-            <span className="font-semibold text-sm">Academia</span>
-            <span className="text-xs text-muted-foreground">{getRoleLabel()} Portal</span>
+          <div className="flex flex-col min-w-0">
+            <span className="font-semibold text-xs sm:text-sm truncate">Academia</span>
+            <span className="text-xs text-muted-foreground truncate">{getRoleLabel()} Portal</span>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{getRoleLabel()}</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs">{getRoleLabel()}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/">
-                    <Home />
-                    <span>Home</span>
+                  <Link href="/" className="flex items-center gap-2 sm:gap-3">
+                    <Home className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-sm">Home</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               {getMenuItems().map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton asChild>
-                    <Link href={item.href}>
-                      <item.icon />
-                      <span>{item.label}</span>
+                    <Link href={item.href} className="flex items-center gap-2 sm:gap-3">
+                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      <span className="text-sm">{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

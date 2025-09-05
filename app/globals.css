@@ -129,3 +129,80 @@
     linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
 }
+
+/* Line clamp utilities for text truncation */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Mobile menu improvements */
+@media (max-width: 768px) {
+  .mobile-scroll-container {
+    overflow-x: auto;
+  }
+  
+  .mobile-scroll-content {
+    min-width: max-content;
+  }
+  
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Responsive table improvements */
+@media (max-width: 768px) {
+  .table-responsive {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .table-responsive table {
+    min-width: 100%;
+  }
+}
+
+/* Chart container responsive improvements */
+.chart-container {
+  width: 100%;
+  min-height: 200px;
+}
+
+@media (min-width: 640px) {
+  .chart-container {
+    min-height: 300px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .chart-container {
+    min-height: 400px;
+  }
+}

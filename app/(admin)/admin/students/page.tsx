@@ -47,31 +47,31 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Students</h1>
-          <p className="text-muted-foreground">Manage student records and enrollment</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-bold">Students</h1>
+          <p className="text-sm text-muted-foreground">Manage student records and enrollment</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={quickAdd}>
+        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
+          <Button variant="outline" onClick={quickAdd} size="sm" className="text-xs sm:text-sm">
             Quick Add
           </Button>
-          <Button asChild>
+          <Button asChild size="sm" className="text-xs sm:text-sm">
             <Link href="/admin/students/import">Import Students</Link>
           </Button>
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:gap-4">
         <Input
           placeholder="Search students..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
+          className="w-full sm:max-w-sm"
         />
         <Select value={performanceFilter} onValueChange={setPerformanceFilter}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full sm:w-48">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -87,39 +87,39 @@ export default function StudentsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Student List ({students.length})</CardTitle>
+          <CardTitle className="text-base sm:text-lg">Student List ({students.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {students.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No students found</p>
-              <Button onClick={quickAdd} className="mt-4">
+            <div className="text-center py-6 sm:py-8">
+              <p className="text-sm text-muted-foreground">No students found</p>
+              <Button onClick={quickAdd} className="mt-4" size="sm">
                 Add First Student
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {students.map((student: any) => (
                 <div
                   key={student.id}
-                  className="flex items-center justify-between border rounded-lg p-4"
+                  className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 border rounded-lg p-3 sm:p-4"
                 >
-                  <div>
-                    <div className="font-medium">{student.name}</div>
-                    <div className="text-sm text-muted-foreground">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-sm sm:text-base truncate">{student.name}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">
                       ID: {student.student_id} • {student.performance_level} • GPA: {student.current_gpa}
                     </div>
                     {student.parent_email && (
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-xs sm:text-sm text-muted-foreground truncate">
                         Parent: {student.parent_email}
                       </div>
                     )}
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                  <div className="flex gap-2 sm:flex-shrink-0">
+                    <Button variant="outline" size="sm" className="flex-1 sm:flex-none text-xs">
                       View
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="flex-1 sm:flex-none text-xs">
                       Edit
                     </Button>
                   </div>

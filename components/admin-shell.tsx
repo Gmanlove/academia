@@ -7,16 +7,21 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AdminSidebar } from "./app-sidebar"
 import { UserMenu } from "./user-menu"
 
-export default function AdminShell({ children, trail = [] as { href?: string; label: string }[] }) {
+interface AdminShellProps {
+  children: ReactNode
+  trail?: { href?: string; label: string }[]
+}
+
+export default function AdminShell({ children, trail = [] }: AdminShellProps) {
   return (
     <SidebarProvider>
       <AdminSidebar />
       <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4 justify-between">
-          <div className="flex items-center gap-2">
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-2 sm:px-4 justify-between">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
+            <Separator orientation="vertical" className="mr-2 h-4 hidden sm:block" />
+            <Breadcrumb className="hidden sm:block">
               <BreadcrumbList>
                 {trail.map((t, i) => (
                   <BreadcrumbItem key={i}>
@@ -28,7 +33,7 @@ export default function AdminShell({ children, trail = [] as { href?: string; la
           </div>
           <UserMenu />
         </header>
-        <main className="p-4">{children as ReactNode}</main>
+        <main className="p-2 sm:p-4 lg:p-6">{children as ReactNode}</main>
       </SidebarInset>
     </SidebarProvider>
   )

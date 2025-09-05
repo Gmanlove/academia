@@ -271,32 +271,38 @@ export default function AdminDashboard() {
   ]
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-          <p className="text-muted-foreground">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Welcome back! Here's what's happening with your schools today.
           </p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Badge variant="outline" className="flex items-center space-x-1">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-2">
+          <Badge variant="outline" className="flex items-center justify-center space-x-1 text-xs">
             <CheckCircle className="h-3 w-3" />
-            <span>System Healthy</span>
+            <span className="hidden sm:inline">System Healthy</span>
+            <span className="sm:hidden">Healthy</span>
           </Badge>
-          <Button variant="outline" size="sm">
-            <Calendar className="h-4 w-4 mr-2" />
-            Today, {new Date().toLocaleDateString('en-US', { 
+          <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+            <Calendar className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden lg:inline">Today, {new Date().toLocaleDateString('en-US', { 
               weekday: 'long', 
               year: 'numeric', 
               month: 'long', 
               day: 'numeric' 
-            })}
+            })}</span>
+            <span className="lg:hidden">{new Date().toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric' 
+            })}</span>
           </Button>
-          <Button>
-            <FileSpreadsheet className="h-4 w-4 mr-2" />
-            View Full Report
+          <Button size="sm" className="text-xs sm:text-sm">
+            <FileSpreadsheet className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">View Full Report</span>
+            <span className="sm:hidden">Report</span>
           </Button>
         </div>
       </div>
@@ -307,25 +313,25 @@ export default function AdminDashboard() {
       {/* Quick Actions Panel */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Activity className="h-5 w-5" />
+          <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+            <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
             <span>Quick Actions Panel</span>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs sm:text-sm">
             Frequently used administrative tasks and shortcuts
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {quickActionButtons.map((action, index) => (
               <Link key={index} href={action.href}>
                 <Card className="cursor-pointer hover:bg-muted/50 transition-colors h-full">
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-3">
-                      <action.icon className={`h-8 w-8 ${action.color}`} />
-                      <div>
-                        <h3 className="font-semibold text-sm">{action.title}</h3>
-                        <p className="text-xs text-muted-foreground">{action.description}</p>
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex items-center space-x-2 sm:space-x-3">
+                      <action.icon className={`h-6 w-6 sm:h-8 sm:w-8 ${action.color} flex-shrink-0`} />
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-xs sm:text-sm truncate">{action.title}</h3>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{action.description}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -338,16 +344,31 @@ export default function AdminDashboard() {
 
       {/* Analytics Charts */}
       <Tabs defaultValue="performance" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="performance">Performance Analytics</TabsTrigger>
-          <TabsTrigger value="submissions">Result Submissions</TabsTrigger>
-          <TabsTrigger value="notifications">Notification Stats</TabsTrigger>
-          <TabsTrigger value="financial">Financial Overview</TabsTrigger>
-          <TabsTrigger value="system">System Insights</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 text-xs sm:text-sm">
+          <TabsTrigger value="performance" className="px-2 sm:px-3">
+            <span className="hidden sm:inline">Performance Analytics</span>
+            <span className="sm:hidden">Performance</span>
+          </TabsTrigger>
+          <TabsTrigger value="submissions" className="px-2 sm:px-3">
+            <span className="hidden sm:inline">Result Submissions</span>
+            <span className="sm:hidden">Results</span>
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="px-2 sm:px-3">
+            <span className="hidden lg:inline">Notification Stats</span>
+            <span className="lg:hidden">Notifications</span>
+          </TabsTrigger>
+          <TabsTrigger value="financial" className="px-2 sm:px-3">
+            <span className="hidden sm:inline">Financial Overview</span>
+            <span className="sm:hidden">Financial</span>
+          </TabsTrigger>
+          <TabsTrigger value="system" className="px-2 sm:px-3">
+            <span className="hidden lg:inline">System Insights</span>
+            <span className="lg:hidden">System</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="performance" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
             {/* Student Performance Trends */}
             <Card>
               <CardHeader>
