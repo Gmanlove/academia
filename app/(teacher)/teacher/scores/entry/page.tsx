@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import type { Student, Subject, ClassRoom, ResultEntry } from "@/lib/types"
 import { createClient } from "@/lib/supabase/client"
+import { useSupabaseAuth } from "@/components/supabase-auth-provider"
 import {
   Save,
   AlertCircle,
@@ -109,6 +110,9 @@ interface ScoreHistory {
 }
 
 export default function ScoreEntryPage() {
+  // Get current user profile for teacher_id
+  const { userProfile } = useSupabaseAuth()
+  
   const [selectedClassId, setSelectedClassId] = useState<string>("")
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>("")
   const [selectedTerm, setSelectedTerm] = useState<"Term 1" | "Term 2" | "Term 3">("Term 1")
@@ -506,6 +510,14 @@ export default function ScoreEntryPage() {
         try {
           const supabase = createClient()
           
+          // Get current teacher ID from user profile
+          if (!userProfile?.id) {
+            console.error('No authenticated user profile')
+            return
+          }
+
+          const teacherId = userProfile.id
+          
           // Prepare entries for auto-save
           const entriesToSave = modifiedEntries.map(entry => ({
             student_id: entry.studentId,
@@ -519,7 +531,7 @@ export default function ScoreEntryPage() {
             session: selectedSession,
             teacher_remark: entry.remarks || "",
             updated_at: new Date().toISOString(),
-            teacher_id: "current-teacher-id" // TODO: Get from auth context
+            teacher_id: teacherId
           }))
 
           // Auto-save to Supabase
@@ -689,6 +701,15 @@ export default function ScoreEntryPage() {
     try {
       const supabase = createClient()
       
+      // Get current teacher ID from user profile
+      if (!userProfile?.id) {
+        alert('❌ Authentication error: Please log in again')
+        setSaving(false)
+        return
+      }
+
+      const teacherId = userProfile.id
+      
       const entriesToSave = Object.values(scores)
         .filter(s => s.ca !== "" || s.exam !== "" || s.remarks)
         .map(s => ({
@@ -703,7 +724,7 @@ export default function ScoreEntryPage() {
           session: selectedSession,
           teacher_remark: s.remarks || "",
           updated_at: new Date().toISOString(),
-          teacher_id: "current-teacher-id" // TODO: Get from auth context
+          teacher_id: teacherId
         }))
 
       // Save to Supabase using upsert (insert or update)

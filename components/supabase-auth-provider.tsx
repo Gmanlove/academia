@@ -46,15 +46,37 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        console.log('🔄 Initializing authentication...')
         const { data: { session } } = await supabase.auth.getSession()
         setUser(session?.user ?? null)
         
         if (session?.user) {
-          await fetchUserProfile(session.user.id)
+          console.log('✅ Found existing session for:', session.user.email)
+          
+          // Fetch real profile immediately, don't use default
+          const profileLoaded = await fetchUserProfile(session.user.id)
+          
+          if (!profileLoaded) {
+            console.warn('⚠️ Profile not found in database - user may need to complete registration')
+            // Set minimal default only if profile doesn't exist
+            const defaultProfile = {
+              id: session.user.id,
+              email: session.user.email || '',
+              role: 'student' as const, // Default to student, not admin
+              name: session.user.email?.split('@')[0] || 'User',
+              permissions: [],
+              email_verified: !!session.user.email_confirmed_at,
+              status: 'active'
+            }
+            setUserProfile(defaultProfile)
+          }
+        } else {
+          console.log('ℹ️ No existing session found')
         }
       } catch (error) {
-        console.error('Error initializing auth:', error)
+        console.error('❌ Error initializing auth:', error)
       } finally {
+        console.log('✅ Auth initialization complete')
         setIsLoading(false)
       }
     }
@@ -63,9 +85,11 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔄 Auth state changed:', event)
         setUser(session?.user ?? null)
         
         if (session?.user) {
+          // Fetch real profile - don't set a default that might be wrong
           await fetchUserProfile(session.user.id)
         } else {
           setUserProfile(null)
@@ -82,33 +106,54 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     return () => subscription.unsubscribe()
   }, [pathname, router, supabase.auth])
 
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfile = async (userId: string): Promise<boolean> => {
     try {
-      console.log('Fetching user profile for:', userId)
+      console.log('📝 Fetching user profile for user ID:', userId)
+      const startTime = Date.now()
       
-      const { data, error } = await supabase
+      // Add timeout to prevent hanging
+      const fetchPromise = supabase
         .from('user_profiles')
-        .select('*')
+        .select('id, email, role, name, permissions, email_verified, status, school_id, teacher_id, student_id')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
-      console.log('Profile fetch result:', { data: !!data, error: error?.message })
+      const timeoutPromise = new Promise<{ data: null, error: any }>((_, reject) => {
+        setTimeout(() => reject(new Error('TIMEOUT')), 5000) // 5 second timeout
+      })
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user profile:', error)
-        return
+      const result = await Promise.race([fetchPromise, timeoutPromise])
+        .catch((err) => {
+          console.warn('⚠️ Profile fetch timeout or error:', err)
+          return { data: null, error: { message: 'Timeout or error', code: 'TIMEOUT' } }
+        })
+
+      const { data, error } = result as any
+      const elapsed = Date.now() - startTime
+      console.log(`⏱️ Profile fetch completed in ${elapsed}ms`)
+
+      if (error) {
+        console.warn('⚠️ Could not fetch profile:', error.message)
+        return false
       }
 
-      setUserProfile(data)
-      console.log('User profile set successfully')
+      if (data) {
+        setUserProfile(data)
+        console.log('✅ User profile loaded:', { role: data.role, email: data.email })
+        return true
+      }
+
+      console.warn('⚠️ No profile found for user ID:', userId)
+      return false
     } catch (error) {
-      console.error('Error fetching user profile:', error)
+      console.warn('⚠️ Profile fetch exception:', error)
+      return false
     }
   }
 
   const signIn = async (email: string, password: string): Promise<boolean> => {
     try {
-      console.log('Attempting sign in for:', email)
+      console.log('🔐 Attempting sign in for:', email)
       setIsAuthOperationLoading(true)
       
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -117,40 +162,122 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
       })
       
       if (error) {
-        console.error('Sign in error:', error)
+        console.warn('❌ Sign in error:', error?.message || 'Unknown error')
+        setIsAuthOperationLoading(false)
         return false
       }
 
-      if (!data.user) {
-        console.error('No user data returned')
+      if (!data?.user) {
+        console.warn('❌ No user data returned from Supabase')
+        setIsAuthOperationLoading(false)
         return false
       }
 
-      console.log('Sign in successful, user ID:', data.user?.id)
+      console.log('✅ Sign in successful! User ID:', data.user.id, 'Email:', data.user.email)
       
-      // Fetch user profile immediately
-      await fetchUserProfile(data.user.id)
+      // Set user immediately
+      setUser(data.user)
       
+      // IMPORTANT: Fetch real profile BEFORE redirecting
+      console.log('📝 Fetching user profile from database...')
+      const profileLoaded = await fetchUserProfile(data.user.id)
+      
+      if (!profileLoaded) {
+        console.warn('⚠️ Could not load user profile from database - creating default')
+        // Set a minimal default profile if profile doesn't exist
+        const defaultProfile: UserProfile = {
+          id: data.user.id,
+          email: data.user.email || '',
+          role: 'student',
+          name: data.user.email?.split('@')[0] || 'User',
+          permissions: [],
+          email_verified: !!data.user.email_confirmed_at,
+          status: 'active'
+        }
+        setUserProfile(defaultProfile)
+        console.log('✅ Using default student profile (profile not found in database)')
+      } else {
+        console.log('✅ Real profile loaded from database successfully')
+      }
+      
+      setIsAuthOperationLoading(false)
       return true
     } catch (error) {
-      console.error('Sign in error:', error)
-      return false
-    } finally {
+      console.warn('❌ Sign in exception:', error instanceof Error ? error.message : String(error))
       setIsAuthOperationLoading(false)
+      return false
     }
   }
 
   const signOut = async (): Promise<void> => {
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error('Sign out error:', error)
+    console.log('🔓 LOGOUT: Starting SUPER AGGRESSIVE logout...')
+    
+    // IMMEDIATE: Clear state first
+    setUser(null)
+    setUserProfile(null)
+    console.log('✅ LOGOUT: Cleared React state')
+    
+    // IMMEDIATE: Clear all storage synchronously
+    if (typeof window !== 'undefined') {
+      try {
+        // Clear storage
+        localStorage.clear()
+        sessionStorage.clear()
+        console.log('✅ LOGOUT: Cleared localStorage and sessionStorage')
+        
+        // Clear all client-accessible cookies
+        const cookies = document.cookie.split(';')
+        for (let cookie of cookies) {
+          const [name] = cookie.split('=')
+          const cookieName = name.trim()
+          if (cookieName) {
+            // Clear with multiple path variants
+            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
+            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname};`
+            console.log(`✅ LOGOUT: Cleared cookie: ${cookieName}`)
+          }
+        }
+      } catch (err) {
+        console.error('⚠️ LOGOUT: Error clearing storage:', err)
       }
-    } catch (error) {
-      console.error('Sign out error:', error)
-    } finally {
-      setUser(null)
-      setUserProfile(null)
+    }
+    
+    // Background: Sign out from Supabase (don't wait)
+    supabase.auth.signOut({ scope: 'global' })
+      .then(() => console.log('✅ LOGOUT: Supabase signOut successful'))
+      .catch(err => console.error('⚠️ LOGOUT: Supabase error:', err))
+    
+    // Background: Call API (don't wait)
+    fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }
+    })
+      .then(() => console.log('✅ LOGOUT: API logout successful'))
+      .catch(err => console.error('⚠️ LOGOUT: API error:', err))
+    
+    // Background: Clear IndexedDB (don't wait)
+    if (typeof window !== 'undefined' && window.indexedDB && window.indexedDB.databases) {
+      window.indexedDB.databases()
+        .then(databases => {
+          databases.forEach(db => {
+            if (db.name) {
+              window.indexedDB.deleteDatabase(db.name)
+              console.log(`✅ LOGOUT: Deleted IndexedDB: ${db.name}`)
+            }
+          })
+        })
+        .catch(e => console.log('⚠️ LOGOUT: IndexedDB error:', e))
+    }
+    
+    // IMMEDIATE: Force redirect WITHOUT waiting
+    console.log('🚀 LOGOUT: IMMEDIATE REDIRECT to /auth...')
+    
+    if (typeof window !== 'undefined') {
+      // Use location.replace for harder redirect that doesn't add to history
+      window.location.replace('/auth')
+    } else {
       router.push('/auth')
     }
   }

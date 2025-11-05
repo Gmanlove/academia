@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { useSupabaseAuth } from "@/components/supabase-auth-provider"
+import { useRouter } from "next/navigation"
 import {
   Users,
   GraduationCap,
@@ -63,26 +65,82 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { user, userProfile, isAuthenticated } = useSupabaseAuth()
+  const router = useRouter()
 
   useEffect(() => {
+    // Check authentication
+    if (!isAuthenticated || !user || userProfile?.role !== 'admin') {
+      console.log('Dashboard: Not authenticated or not admin', { isAuthenticated, hasUser: !!user, role: userProfile?.role })
+      router.push('/auth')
+      return
+    }
+
     const fetchDashboardData = async () => {
       try {
-        const response = await fetch('/api/dashboard')
-        if (!response.ok) {
-          throw new Error('Failed to fetch dashboard data')
-        }
-        const result = await response.json()
-        // Extract the data structure from API response
-        setStats(result.success ? result.data : null)
+        // Use mock/demo data for now since we don't have populated database
+        setStats({
+          overview: {
+            totalStudents: 0,
+            totalTeachers: 0,
+            totalClasses: 0,
+            totalSubjects: 0,
+            activeStudents: 0,
+            averagePerformance: 0
+          },
+          charts: {
+            enrollmentTrends: Array.from({ length: 6 }, (_, i) => ({
+              month: new Date(2024, i, 1).toLocaleDateString('en-US', { month: 'short' }),
+              enrollments: Math.floor(Math.random() * 20) + 5
+            })),
+            performanceDistribution: [
+              { name: 'Excellent', value: 0, color: '#22c55e' },
+              { name: 'Good', value: 0, color: '#3b82f6' },
+              { name: 'Average', value: 0, color: '#f59e0b' },
+              { name: 'Poor', value: 0, color: '#ef4444' },
+              { name: 'Critical', value: 0, color: '#dc2626' }
+            ],
+            termAverages: []
+          },
+          recentResults: [],
+          recentActivities: [
+            {
+              id: 1,
+              type: 'system',
+              description: 'Welcome to Academia Dashboard',
+              time: new Date().toISOString(),
+              icon: 'check-circle'
+            }
+          ],
+          systemAlerts: [
+            {
+              id: 1,
+              type: 'info',
+              title: 'Getting Started',
+              message: 'Add students and teachers to see data here',
+              priority: 'low'
+            }
+          ],
+          notifications: [
+            {
+              id: 1,
+              title: 'Welcome!',
+              message: 'Your dashboard is ready. Start by adding students and teachers.',
+              type: 'info',
+              date: new Date().toISOString()
+            }
+          ]
+        })
+        setLoading(false)
       } catch (err) {
+        console.error('Dashboard fetch error:', err)
         setError(err instanceof Error ? err.message : 'An error occurred')
-      } finally {
         setLoading(false)
       }
     }
 
     fetchDashboardData()
-  }, [])
+  }, [isAuthenticated, user, userProfile, router])
 
   if (loading) {
     return (

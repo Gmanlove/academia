@@ -1,6 +1,6 @@
 "use client"
 
-import { BarChart2, Bell, BookOpen, Building2, FileText, Gauge, LayoutDashboard, Settings, Users, UsersRound, Home, Calculator, MessageSquare, TrendingUp, History } from "lucide-react"
+import { BarChart2, Bell, BookOpen, Building2, FileText, Gauge, LayoutDashboard, Settings, Users, UsersRound, Home, Calculator, MessageSquare, TrendingUp, History, ClipboardCheck, Brain } from "lucide-react"
 import Link from "next/link"
 import {
   Sidebar,
@@ -37,6 +37,7 @@ export function AdminSidebar({ role = "admin" }: AppSidebarProps) {
   const teacherMenuItems = [
     { href: "/teacher/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/teacher/classes", icon: BookOpen, label: "My Classes" },
+    { href: "/teacher/cbt", icon: Brain, label: "CBT/Exams" },
     { href: "/teacher/scores/entry", icon: Calculator, label: "Score Entry" },
     { href: "/teacher/analytics", icon: Gauge, label: "Analytics" },
     { href: "/teacher/communication", icon: MessageSquare, label: "Communication" },
@@ -44,6 +45,7 @@ export function AdminSidebar({ role = "admin" }: AppSidebarProps) {
 
   const studentMenuItems = [
     { href: "/student/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/student/cbt", icon: ClipboardCheck, label: "Take Exams" },
     { href: "/student/results", icon: BarChart2, label: "My Results" },
     { href: "/student/history", icon: History, label: "Academic History" },
     { href: "/student/notifications", icon: Bell, label: "Notifications" },

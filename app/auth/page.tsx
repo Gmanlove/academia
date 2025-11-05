@@ -23,6 +23,7 @@ import {
   UserPlus
 } from "lucide-react"
 import { useSupabaseAuth } from "@/components/supabase-auth-provider"
+import { getDefaultRoute } from "@/lib/routes"
 
 interface LoginFormData {
   email: string
@@ -70,25 +71,15 @@ export default function AuthPage() {
     }
   }, [searchParams])
 
-  // Redirect if user is already authenticated
+  // Redirect if user is authenticated
   useEffect(() => {
-    if (userProfile && !loading) {
-      console.log('User already authenticated, redirecting...', userProfile.role)
-      switch (userProfile.role) {
-        case 'admin':
-          router.push('/admin/dashboard')
-          break
-        case 'teacher':
-          router.push('/teacher/dashboard')
-          break
-        case 'student':
-          router.push('/student/dashboard')
-          break
-        default:
-          router.push('/')
-      }
+    if (userProfile && !authLoading && !loading) {
+      console.log('✅ User authenticated, role:', userProfile.role, '- Redirecting now')
+      const dashboardUrl = getDefaultRoute(userProfile.role)
+      console.log('↪️ Redirecting to:', dashboardUrl)
+      router.replace(dashboardUrl)
     }
-  }, [userProfile, loading, router])
+  }, [userProfile, authLoading, loading, router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -100,21 +91,27 @@ export default function AuthPage() {
 
     setLoading(true)
     setError("")
+    setSuccess("")
 
     try {
-      console.log('Attempting login with:', loginData.email)
+      console.log('🔑 Login form submitted for:', loginData.email)
       const success = await signIn(loginData.email, loginData.password)
       
+      console.log('🔑 signIn returned:', success)
+      
       if (success) {
+        console.log('✅ Login successful! Profile should be loaded, useEffect will redirect')
         setSuccess("Login successful! Redirecting...")
-        // The redirect will happen automatically via the useEffect above
+        setLoading(false)
+        // The useEffect will handle the redirect when userProfile updates
       } else {
+        console.log('❌ Login failed - signIn returned false')
         setError("Invalid email or password. Please try again.")
+        setLoading(false)
       }
     } catch (err) {
-      console.error('Login error:', err)
+      console.error('❌ Login exception:', err)
       setError("Authentication failed. Please try again.")
-    } finally {
       setLoading(false)
     }
   }

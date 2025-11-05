@@ -6,10 +6,13 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
 
     // Get current user and check if they're an admin
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    console.log('Dashboard API: Auth check', { hasUser: !!user, authError: authError?.message })
     
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      console.log('Dashboard API: No user found, returning 401')
+      return NextResponse.json({ error: 'Unauthorized', details: 'No authenticated user' }, { status: 401 })
     }
 
     const { data: userProfile } = await supabase
